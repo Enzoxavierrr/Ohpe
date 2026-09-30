@@ -1,0 +1,108 @@
+/* Staggered tile loader — Ohpe identity
+   5 tiles horizontais em degradê de azuis (identidade),
+   cascade de saída controlada 100% por nth-child + transition-delay. */
+
+.loader {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100vh;
+  transition: width 0s 1.5s ease;
+}
+
+.loader--active {
+  width: 100%;
+  transition-delay: 0s;
+}
+
+/* Ícone (arco + nome) no centro, aparece depois dos tiles */
+.loader__icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.loader--active .loader__icon {
+  opacity: 1;
+  transition: opacity 0.5s 0.4s ease;
+}
+
+.loader__name {
+  font-family: 'Sora', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-size: 56px;
+  font-weight: 300;
+  letter-spacing: -1.5px;
+  color: #1f1f20;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: ohpe-name 900ms cubic-bezier(0.16, 1, 0.3, 1) 900ms forwards;
+}
+
+.loader--active .loader__mark #ohpe-splash-arc {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: ohpe-draw 1100ms cubic-bezier(0.65, 0, 0.35, 1) 300ms forwards;
+}
+
+@keyframes ohpe-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes ohpe-name {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- Tiles --- */
+.loader__tile {
+  position: absolute;
+  left: 0;
+  width: 0;
+  height: 20%;
+  transition: width 0.7s ease;
+}
+
+/* Posição vertical — todos os tiles brancos */
+.loader__tile:nth-child(1) { top:  0%; background: #ffffff; }
+.loader__tile:nth-child(2) { top: 20%; background: #ffffff; }
+.loader__tile:nth-child(3) { top: 40%; background: #ffffff; }
+.loader__tile:nth-child(4) { top: 60%; background: #ffffff; }
+.loader__tile:nth-child(5) { top: 80%; background: #ffffff; }
+
+/* Entrada: tiles cobrem 100% quando --active */
+.loader--active .loader__tile { width: 100%; }
+.loader--active .loader__tile:nth-child(1) { transition-delay: 0s; }
+.loader--active .loader__tile:nth-child(2) { transition-delay: 0.2s; }
+.loader--active .loader__tile:nth-child(3) { transition-delay: 0.4s; }
+.loader--active .loader__tile:nth-child(4) { transition-delay: 0.6s; }
+.loader--active .loader__tile:nth-child(5) { transition-delay: 0.8s; }
+
+/* Saída (sem --active): cascade de retração — top primeiro */
+.loader__tile:nth-child(1) { transition-delay: 0s; }
+.loader__tile:nth-child(2) { transition-delay: 0.15s; }
+.loader__tile:nth-child(3) { transition-delay: 0.3s; }
+.loader__tile:nth-child(4) { transition-delay: 0.45s; }
+.loader__tile:nth-child(5) { transition-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loader__tile,
+  .loader__icon,
+  .loader__name,
+  .loader__mark #ohpe-splash-arc {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 256">
+  <g transform="translate(20, 20)">
+    <path d="M 128 44 A 84 84 0 1 0 212 128"
+          fill="none" stroke="#000" stroke-width="32" stroke-linecap="round"/>
+  </g>
+  <text x="290" y="180" font-family="Inter, system-ui, -apple-system, Segoe UI, Helvetica Neue, sans-serif"
+        font-size="160" font-weight="600" letter-spacing="-6" fill="#000">Ohpe</text>
+</svg>

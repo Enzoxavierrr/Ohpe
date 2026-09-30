@@ -11,10 +11,13 @@ type Props = {
   onRename: (title: string) => void;
   onRemove: () => void;
   onAddCard: (title: string) => void;
+  onRenameCard: (cardId: string, title: string) => void;
   onRemoveCard: (cardId: string) => void;
 };
 
-export function Column({ column, cards, onRename, onRemove, onAddCard, onRemoveCard }: Props) {
+export function Column({
+  column, cards, onRename, onRemove, onAddCard, onRenameCard, onRemoveCard,
+}: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(column.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +77,12 @@ export function Column({ column, cards, onRename, onRemove, onAddCard, onRemoveC
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="card-list">
           {cards.map((card) => (
-            <Card key={card.id} card={card} onRemove={() => onRemoveCard(card.id)} />
+            <Card
+              key={card.id}
+              card={card}
+              onRename={(title) => onRenameCard(card.id, title)}
+              onRemove={() => onRemoveCard(card.id)}
+            />
           ))}
         </div>
       </SortableContext>

@@ -144,6 +144,17 @@ export function BoardPage() {
     }));
   }
 
+  function renameCard(cardId: string, title: string) {
+    setBoard((prev) => {
+      const existing = prev.cards[cardId];
+      if (!existing) return prev;
+      return {
+        ...prev,
+        cards: { ...prev.cards, [cardId]: { ...existing, title } },
+      };
+    });
+  }
+
   function removeCard(cardId: string) {
     setBoard((prev) => {
       const nextCards = { ...prev.cards };
@@ -201,6 +212,7 @@ export function BoardPage() {
                 onRename={(title) => renameColumn(col.id, title)}
                 onRemove={() => removeColumn(col.id)}
                 onAddCard={(title) => addCard(col.id, title)}
+                onRenameCard={(cardId, title) => renameCard(cardId, title)}
                 onRemoveCard={(cardId) => removeCard(cardId)}
               />
             ))}

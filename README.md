@@ -52,7 +52,7 @@ Um kanban de bolso, feito pra abrir num aba e usar. **Sem login, sem servidor, s
 - **React 18** + **TypeScript 5** — UI declarativa e tipada
 - **Vite 5** — dev server rápido e build estático
 - **@dnd-kit** (`core` + `sortable`) — drag & drop acessível
-- **CSS puro** com tokens custom (`--color1..5`) — sem framework de estilo
+- **CSS puro** com tokens semânticos (`--brand-primary`, `--text-primary`, …) — sem framework de estilo
 
 ## Como rodar
 
@@ -100,13 +100,13 @@ src/
 
 ## Paleta
 
-| Token | Hex | Uso |
-|---|---|---|
-| `--color1` | `#1f1f20` | Texto principal |
-| `--color2` | `#2b4c7e` | Acento primário, borda de foco |
-| `--color3` | `#567ebb` | Hover, gradiente da marca |
-| `--color4` | `#606d80` | Texto secundário, ícones |
-| `--color5` | `#dce0e6` | Fundo, chips |
+| Token semântico | Hex | Original | Uso |
+|---|---|---|---|
+| `--text-primary`    | `#1f1f20` | `color1` | Texto principal |
+| `--brand-primary`   | `#2b4c7e` | `color2` | Acento forte: marca, foco, hover ativo |
+| `--brand-secondary` | `#567ebb` | `color3` | Acento leve: borda de foco, gradiente |
+| `--text-muted`      | `#606d80` | `color4` | Texto e ícones secundários |
+| `--surface-muted`   | `#dce0e6` | `color5` | Fundo geral, chips |
 
 ## Roadmap
 
@@ -121,5 +121,9 @@ src/
 MIT © Enzo
 
 <div align="center">
-  <sub>Feito com <code>◇</code> e um pouco de café.</sub>
+  <sub>
+    Feito com
+    <img src="public/brand-mark.svg" alt="" width="12" height="12" align="center" />
+    e um pouco de café.
+  </sub>
 </div>

@@ -13,12 +13,14 @@ import {
 import { arrayMove } from '@dnd-kit/sortable';
 import { Column } from '../components/Column';
 import { useBoard } from '../hooks/useBoard';
+import { useTheme } from '../hooks/useTheme';
 import { downloadJson } from '../utils/downloadJson';
 import type { Board, CardData } from '../types/board';
 import '../styles/board.css';
 
 export function BoardPage() {
   const { board, setBoard } = useBoard();
+  const { theme, toggle: toggleTheme } = useTheme();
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -183,6 +185,29 @@ export function BoardPage() {
         </div>
 
         <div className="header-actions">
+          <button
+            type="button"
+            className="icon-btn theme-toggle"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+            aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+            aria-pressed={theme === 'dark'}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <g className="theme-toggle__sun">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="M4.93 4.93l1.41 1.41" />
+                <path d="M17.66 17.66l1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="M6.34 17.66l-1.41 1.41" />
+                <path d="M19.07 4.93l-1.41 1.41" />
+              </g>
+              <path className="theme-toggle__moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
           <button
             type="button"
             className="icon-btn"

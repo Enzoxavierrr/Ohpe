@@ -28,6 +28,7 @@
   align-items: center;
   gap: 20px;
   opacity: 0;
+  color: var(--text-primary);
   transition: opacity 0.5s ease;
 }
 
@@ -41,7 +42,7 @@
   font-size: 56px;
   font-weight: 300;
   letter-spacing: -1.5px;
-  color: #1f1f20;
+  color: var(--text-primary);
   opacity: 0;
   transform: translateX(-12px);
   animation: ohpe-name 900ms cubic-bezier(0.16, 1, 0.3, 1) 900ms forwards;
@@ -73,12 +74,12 @@
   transition: width 0.7s ease;
 }
 
-/* Posição vertical — todos os tiles brancos */
-.loader__tile:nth-child(1) { top:  0%; background: #ffffff; }
-.loader__tile:nth-child(2) { top: 20%; background: #ffffff; }
-.loader__tile:nth-child(3) { top: 40%; background: #ffffff; }
-.loader__tile:nth-child(4) { top: 60%; background: #ffffff; }
-.loader__tile:nth-child(5) { top: 80%; background: #ffffff; }
+/* Posição vertical — tiles usam o token do tema (branco no light, escuro no dark) */
+.loader__tile:nth-child(1) { top:  0%; background: var(--surface-card); }
+.loader__tile:nth-child(2) { top: 20%; background: var(--surface-card); }
+.loader__tile:nth-child(3) { top: 40%; background: var(--surface-card); }
+.loader__tile:nth-child(4) { top: 60%; background: var(--surface-card); }
+.loader__tile:nth-child(5) { top: 80%; background: var(--surface-card); }
 
 /* Entrada: tiles cobrem 100% quando --active */
 .loader--active .loader__tile { width: 100%; }

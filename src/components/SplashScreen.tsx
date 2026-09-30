@@ -39,7 +39,7 @@ export function SplashScreen({ onDone }: Props) {
           width="112"
           height="112"
           fill="none"
-          stroke="#1f1f20"
+          stroke="currentColor"
           strokeWidth="32"
           strokeLinecap="round"
         >

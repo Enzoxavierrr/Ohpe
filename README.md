@@ -5,7 +5,7 @@
 <br />
 
 <h1>
-  <img src="public/favicon.svg" alt="" width="22" height="22" align="center" />
+  <img src="public/brand-mark.svg" alt="" width="22" height="22" align="center" />
   Ohpe
 </h1>
 

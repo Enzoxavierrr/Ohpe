@@ -365,11 +365,66 @@
 }
 
 /* ============ RESPONSIVE ============ */
+
+/* Tablet — 640-1024px: paddings intermediários, colunas mantêm 300px */
+@media (max-width: 1024px) {
+  .board-header { padding: 18px 28px; }
+  .board-canvas { padding: 24px 28px 32px; }
+  .columns-row { gap: 16px; }
+}
+
+/* Mobile — até 640px: colunas quase full-width com peek da próxima,
+   ações do card sempre visíveis, inputs com fonte 16px+ (evita zoom iOS) */
 @media (max-width: 640px) {
-  .board-header { padding: 16px 20px; flex-wrap: wrap; }
-  .board-canvas { padding: 20px; }
-  .column { flex-basis: 82vw; }
-  .add-column { flex-basis: 82vw; }
+  .board-header {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .brand-mark { width: 32px; height: 32px; }
+  .brand-name { font-size: 20px; }
+  .header-actions { gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; }
+
+  .board-canvas {
+    padding: 16px 16px 24px;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 16px;
+  }
+  .columns-row { gap: 12px; }
+  .column {
+    flex-basis: min(84vw, 320px);
+    scroll-snap-align: start;
+    padding: 14px;
+  }
+  .add-column {
+    flex-basis: min(84vw, 320px);
+    padding: 16px;
+  }
+
+  .column-title { font-size: 15px; }
+  .column-title-input { font-size: 16px; }   /* >=16px evita zoom no iOS */
+  .card-title { font-size: 15px; }
+  .card-edit,
+  .add-card-editing textarea { font-size: 16px; }
+
+  /* Sem hover no touch → ações do card sempre visíveis, e maiores */
+  .card-actions { opacity: 1; }
+  .card-action { width: 32px; height: 32px; }
+}
+
+/* Qualquer dispositivo sem hover (touch) — mostra ações do card sempre */
+@media (hover: none) {
+  .card-actions { opacity: 1; }
+  .card:hover { border-color: var(--border-subtle); }
+}
+
+/* Mobile pequeno — 380px pra baixo: apertar mais */
+@media (max-width: 380px) {
+  .board-header { padding: 12px; }
+  .brand-name { font-size: 18px; }
+  .board-canvas { padding: 12px 12px 20px; }
+  .column,
+  .add-column { flex-basis: 88vw; }
 }
 
 /* ============ DARK THEME — overrides pros rgba hardcoded ============ */

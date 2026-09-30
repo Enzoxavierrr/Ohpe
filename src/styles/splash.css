@@ -107,3 +107,16 @@
     transition-delay: 0ms !important;
   }
 }
+
+/* --- Responsividade da splash --- */
+@media (max-width: 640px) {
+  .loader__icon { gap: 14px; }
+  .loader__mark { width: 84px; height: 84px; }
+  .loader__name { font-size: 42px; letter-spacing: -1px; }
+}
+
+@media (max-width: 380px) {
+  .loader__icon { gap: 10px; }
+  .loader__mark { width: 68px; height: 68px; }
+  .loader__name { font-size: 34px; }
+}

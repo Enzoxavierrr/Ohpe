@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: var(--sora);
+  font-family: var(--font-display);
 }
 .brand-mark {
   width: 36px;
@@ -31,8 +31,8 @@
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--color2), var(--color3));
-  color: var(--surface-strong);
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  color: var(--surface-card);
   font-size: 18px;
   box-shadow: var(--shadow-sm);
 }
@@ -40,7 +40,7 @@
   font-size: 22px;
   font-weight: 300;
   letter-spacing: -0.3px;
-  color: var(--color1);
+  color: var(--text-primary);
 }
 
 .header-actions {
@@ -53,8 +53,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--surface-strong);
-  color: var(--color2);
+  background: var(--surface-card);
+  color: var(--brand-primary);
   display: grid;
   place-items: center;
   box-shadow: var(--shadow-xs);
@@ -63,8 +63,8 @@
 }
 .icon-btn:hover {
   transform: translateY(-1px);
-  color: var(--surface-strong);
-  background: var(--color2);
+  color: var(--surface-card);
+  background: var(--brand-primary);
   box-shadow: var(--shadow-sm);
 }
 .icon-btn:active { transform: translateY(0); }
@@ -98,7 +98,7 @@
   transition: box-shadow 0.2s ease, border-color 0.15s ease;
 }
 .column.is-over {
-  border-color: var(--color3);
+  border-color: var(--brand-secondary);
   box-shadow: var(--shadow-md);
 }
 
@@ -114,22 +114,22 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--sora);
+  font-family: var(--font-display);
   font-weight: 300;
   font-size: 16px;
   letter-spacing: -0.1px;
-  color: var(--color1);
+  color: var(--text-primary);
   padding: 4px 8px;
   border-radius: 8px;
   text-align: left;
 }
 .column-title:hover { background: rgba(31, 31, 32, 0.04); }
 .column-count {
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
-  color: var(--color2);
-  background: var(--color5);
+  color: var(--brand-primary);
+  background: var(--surface-muted);
   padding: 2px 8px;
   border-radius: 999px;
   letter-spacing: 0.02em;
@@ -138,12 +138,12 @@
 .column-title-input {
   flex: 1;
   padding: 4px 8px;
-  border: 1px solid var(--color3);
+  border: 1px solid var(--brand-secondary);
   border-radius: 8px;
-  font-family: var(--sora);
+  font-family: var(--font-display);
   font-weight: 300;
   font-size: 16px;
-  background: var(--surface-strong);
+  background: var(--surface-card);
   outline: none;
 }
 
@@ -151,7 +151,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  color: var(--color4);
+  color: var(--text-muted);
   opacity: 0.7;
   display: grid;
   place-items: center;
@@ -159,7 +159,11 @@
   line-height: 1;
   transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-.column-remove:hover { opacity: 1; background: rgba(31, 31, 32, 0.06); color: var(--color1); }
+.column-remove:hover {
+  opacity: 1;
+  background: rgba(31, 31, 32, 0.06);
+  color: var(--text-primary);
+}
 
 .card-list {
   display: flex;
@@ -170,7 +174,7 @@
 
 /* ============ CARD ============ */
 .card {
-  background: var(--surface-strong);
+  background: var(--surface-card);
   border-radius: var(--radius);
   padding: 12px 14px;
   box-shadow: var(--shadow-xs);
@@ -182,7 +186,7 @@
   transition: box-shadow 0.15s ease, transform 0.05s ease, border-color 0.15s ease;
 }
 .card:hover {
-  border-color: var(--color3);
+  border-color: var(--brand-secondary);
   box-shadow: var(--shadow-sm);
 }
 .card:active { cursor: grabbing; }
@@ -196,7 +200,7 @@
   flex: 1;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--color1);
+  color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
 }
@@ -217,31 +221,35 @@
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  color: var(--color4);
+  color: var(--text-muted);
   display: grid;
   place-items: center;
   transition: background 0.15s ease, color 0.15s ease;
 }
 .card-action:hover {
   background: rgba(31, 31, 32, 0.08);
-  color: var(--color2);
+  color: var(--brand-primary);
 }
 
 .card-edit {
   flex: 1;
   width: 100%;
-  border: 1px solid var(--color3);
+  border: 1px solid var(--brand-secondary);
   border-radius: 8px;
   padding: 6px 8px;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--color1);
-  background: var(--surface-strong);
+  color: var(--text-primary);
+  background: var(--surface-card);
   resize: none;
   outline: none;
   font-family: inherit;
 }
-.card.editing { cursor: default; border-color: var(--color3); box-shadow: var(--shadow-sm); }
+.card.editing {
+  cursor: default;
+  border-color: var(--brand-secondary);
+  box-shadow: var(--shadow-sm);
+}
 
 /* ============ ADD CARD ============ */
 .add-card-tile {
@@ -250,15 +258,15 @@
   border-radius: var(--radius);
   border: 1.5px dashed var(--border-strong);
   background: transparent;
-  color: var(--color4);
+  color: var(--text-muted);
   display: grid;
   place-items: center;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .add-card-tile:hover {
   background: rgba(255, 255, 255, 0.55);
-  border-color: var(--color3);
-  color: var(--color2);
+  border-color: var(--brand-secondary);
+  color: var(--brand-primary);
 }
 .add-card-plus {
   font-size: 22px;
@@ -267,10 +275,10 @@
 }
 
 .add-card-editing {
-  background: var(--surface-strong);
+  background: var(--surface-card);
   border-radius: var(--radius);
   padding: 10px 12px;
-  border: 1px solid var(--color3);
+  border: 1px solid var(--brand-secondary);
   box-shadow: var(--shadow-sm);
 }
 .add-card-editing textarea {
@@ -281,7 +289,7 @@
   font-size: 14px;
   line-height: 1.45;
   background: transparent;
-  color: var(--color1);
+  color: var(--text-primary);
 }
 
 /* ============ ADD COLUMN ============ */
@@ -292,8 +300,8 @@
   border-radius: var(--radius-lg);
   border: 1.5px dashed var(--border-strong);
   background: transparent;
-  color: var(--color4);
-  font-family: var(--sora);
+  color: var(--text-muted);
+  font-family: var(--font-display);
   font-weight: 300;
   font-size: 15px;
   display: inline-flex;
@@ -304,8 +312,8 @@
 }
 .add-column:hover {
   background: rgba(255, 255, 255, 0.55);
-  border-color: var(--color3);
-  color: var(--color2);
+  border-color: var(--brand-secondary);
+  color: var(--brand-primary);
 }
 .add-column span { font-size: 20px; }
 

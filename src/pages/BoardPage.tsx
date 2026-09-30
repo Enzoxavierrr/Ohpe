@@ -174,7 +174,19 @@ export function BoardPage() {
     <div className="board-shell">
       <header className="board-header">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">◇</span>
+          <span className="brand-mark" aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2 L22 12 L12 22 L2 12 Z" />
+            </svg>
+          </span>
           <span className="brand-name">Ohpe</span>
         </div>
 

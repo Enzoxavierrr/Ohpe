@@ -64,6 +64,17 @@
   box-shadow: var(--shadow-sm);
 }
 .icon-btn:active { transform: translateY(0); }
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+.icon-btn:disabled:hover {
+  color: var(--brand-primary);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
+  transform: none;
+}
 
 /* ============ THEME TOGGLE (sol ↔ lua animado) ============ */
 .theme-toggle svg {

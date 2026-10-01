@@ -401,6 +401,24 @@
   flex-shrink: 0;
 }
 :root[data-theme="dark"] .login-remember svg { color: #6ee7b7; }
+
+/* ---- Config error (env vars faltando) ---- */
+.config-missing {
+  list-style: none;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-elevated);
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.config-missing li code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: var(--brand-primary);
+}
 @keyframes login-dot-pulse {
   0%, 100% { opacity: 0.35; transform: scale(0.85); }
   50%      { opacity: 1;    transform: scale(1.15); }

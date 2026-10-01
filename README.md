@@ -60,8 +60,24 @@ Um kanban de bolso, feito pra abrir num aba e usar. **Sem login, sem servidor, s
 git clone <este-repo>
 cd Ohpe
 npm install
-npm run dev            # http://localhost:5173
+cp .env.local.example .env.local   # preencher URL + chave do Supabase (ver abaixo)
+npm run dev                        # http://localhost:5173
 ```
+
+### Variáveis de ambiente
+
+O login e a sincronização usam Supabase. Crie um arquivo `.env.local` na raiz:
+
+```
+VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co
+VITE_SUPABASE_ANON_KEY=<sua-anon-ou-publishable-key>
+```
+
+Setup do projeto Supabase:
+1. Criar um projeto em [supabase.com](https://supabase.com).
+2. Aplicar a migration `boards` com RLS (ver `src/hooks/useBoard.ts` pro schema esperado — `user_id uuid pk`, `data jsonb`, `updated_at timestamptz`).
+3. Em **Auth → Providers → Email**, desabilitar *Confirm email* pra cadastro em 1 passo.
+4. Copiar URL + publishable key pra `.env.local`.
 
 Para produção:
 
@@ -70,7 +86,7 @@ npm run build          # gera dist/
 npm run preview        # serve dist/ localmente
 ```
 
-Como o app é 100% estático, publique a pasta `dist/` em qualquer host — **Vercel, Netlify, GitHub Pages, Cloudflare Pages** — arrasta e solta.
+Defina as mesmas variáveis `VITE_SUPABASE_*` no painel do host (**Vercel, Netlify, Cloudflare Pages**).
 
 ## Estrutura
 

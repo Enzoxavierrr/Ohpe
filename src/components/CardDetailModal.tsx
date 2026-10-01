@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { CardData, ColumnStatus } from '../types/board';
 import '../styles/modal.css';
 
@@ -27,6 +27,96 @@ const STATUS_OPTIONS: { value: CardStatus; label: string }[] = [
 
 function labelOf(status: CardStatus) {
   return STATUS_OPTIONS.find((o) => o.value === status)?.label ?? 'Sem status';
+}
+
+type EditableNoteProps = {
+  value: string;
+  onChange: (next: string) => void;
+  placeholder: string;
+  rows: number;
+  resolution?: boolean;
+};
+
+function EditableNote({ value, onChange, placeholder, rows, resolution }: EditableNoteProps) {
+  const hasContent = value.trim().length > 0;
+  const [editing, setEditing] = useState(!hasContent);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Sincroniza quando o card muda externamente (ex: abre outro card)
+  useEffect(() => {
+    setEditing(value.trim().length === 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!editing) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [editing]);
+
+  function handleBlur() {
+    if (value.trim().length > 0) setEditing(false);
+  }
+
+  function handleKeyDown(e: ReactKeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.currentTarget.blur();
+    }
+  }
+
+  function enterEdit() {
+    setEditing(true);
+  }
+
+  function noteKeyboard(e: ReactKeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      enterEdit();
+    }
+  }
+
+  if (editing) {
+    return (
+      <textarea
+        ref={textareaRef}
+        className={`card-detail__field ${resolution ? 'card-detail__field--resolution' : ''}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        rows={rows}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`card-detail__note ${resolution ? 'card-detail__note--resolution' : ''}`}
+      onClick={enterEdit}
+      onKeyDown={noteKeyboard}
+      role="button"
+      tabIndex={0}
+      title="Clique para editar"
+    >
+      <div className="card-detail__note-text">{value}</div>
+      <button
+        type="button"
+        className="card-detail__note-edit"
+        onClick={(e) => { e.stopPropagation(); enterEdit(); }}
+        aria-label="Editar"
+        title="Editar"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      </button>
+    </div>
+  );
 }
 
 export function CardDetailModal({
@@ -172,28 +262,21 @@ export function CardDetailModal({
           )}
         </div>
 
-        <label className="card-detail__label" htmlFor="card-detail-desc">
-          Descrição
-        </label>
-        <textarea
-          id="card-detail-desc"
-          className="card-detail__field"
+        <label className="card-detail__label">Descrição</label>
+        <EditableNote
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={setDescription}
           placeholder="Contexto, requisitos, links…"
           rows={4}
         />
 
-        <label className="card-detail__label" htmlFor="card-detail-resolution">
-          Como resolvi
-        </label>
-        <textarea
-          id="card-detail-resolution"
-          className="card-detail__field card-detail__field--resolution"
+        <label className="card-detail__label">Como resolvi</label>
+        <EditableNote
           value={resolution}
-          onChange={(e) => setResolution(e.target.value)}
+          onChange={setResolution}
           placeholder="Anote aqui o caminho, decisões, código, links do que foi feito. Serve de memória pra depois."
           rows={6}
+          resolution
         />
 
         <div className="modal__actions card-detail__actions">

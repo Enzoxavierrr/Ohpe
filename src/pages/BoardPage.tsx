@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -15,8 +15,9 @@ import { Column } from '../components/Column';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { CardDetailModal } from '../components/CardDetailModal';
 import { ArchiveDrawer } from '../components/ArchiveDrawer';
-import { useBoard } from '../hooks/useBoard';
+import { useBoard, BOARD_STORAGE_KEY, isBoardShape, migrateBoard } from '../hooks/useBoard';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth, userDisplayName } from '../hooks/useAuth';
 import { downloadJson } from '../utils/downloadJson';
 import type { Board, CardData, ColumnStatus } from '../types/board';
 import '../styles/board.css';
@@ -29,8 +30,54 @@ function nextStatus(curr: ColumnStatus | undefined): ColumnStatus | undefined {
 }
 
 export function BoardPage() {
-  const { board, setBoard } = useBoard();
+  const { user, signOut } = useAuth();
+  const { board, setBoard, syncing } = useBoard(user?.id ?? null);
   const { theme, toggle: toggleTheme } = useTheme();
+
+  async function doSignOut() {
+    setConfirmSignOut(false);
+    try { localStorage.removeItem(BOARD_STORAGE_KEY); } catch {}
+    await signOut();
+  }
+
+  function handleDownload() {
+    downloadJson(board, 'ohpe-board');
+    setMenuOpen(false);
+  }
+
+  function handleImportClick() {
+    setImportError(null);
+    fileInputRef.current?.click();
+    setMenuOpen(false);
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!isBoardShape(parsed)) {
+        setImportError('Arquivo não parece um board do Ohpe (precisa ter columns + cards).');
+        return;
+      }
+      const migrated = migrateBoard(parsed);
+      if (migrated.columns.length === 0) {
+        setImportError('O arquivo não tem colunas válidas.');
+        return;
+      }
+      setPendingImport(migrated);
+    } catch (err: any) {
+      setImportError('Não consegui ler esse arquivo como JSON válido.');
+    }
+  }
+
+  function confirmImport() {
+    if (!pendingImport) return;
+    setBoard(pendingImport);
+    setPendingImport(null);
+  }
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
@@ -38,7 +85,31 @@ export function BoardPage() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [landedCardId, setLandedCardId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pendingImport, setPendingImport] = useState<Board | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const landedTimer = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -384,18 +455,68 @@ export function BoardPage() {
               <path d="M3 4v5h5" />
             </svg>
           </button>
+          <div className="header-menu" ref={menuRef}>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              title="Mais opções"
+              aria-label="Mais opções"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="5"  r="1.3" fill="currentColor" />
+                <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+                <circle cx="12" cy="19" r="1.3" fill="currentColor" />
+              </svg>
+            </button>
+            {menuOpen && (
+              <div className="header-menu__dropdown" role="menu">
+                <button type="button" className="header-menu__item" onClick={handleDownload} role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Baixar JSON
+                </button>
+                <button type="button" className="header-menu__item" onClick={handleImportClick} role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  Importar JSON
+                </button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+          </div>
           <button
             type="button"
-            className="icon-btn"
-            onClick={() => downloadJson(board, 'ohpe-board')}
-            title="Baixar board em JSON"
-            aria-label="Baixar board em JSON"
+            className={`icon-btn ${syncing ? 'icon-btn--syncing' : ''}`}
+            onClick={() => setConfirmSignOut(true)}
+            title={syncing ? 'Sincronizando…' : `Sair (${userDisplayName(user)})`}
+            aria-label="Sair"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            {syncing ? (
+              <svg className="icon-btn__spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            )}
           </button>
         </div>
       </header>
@@ -499,6 +620,41 @@ export function BoardPage() {
         destructive
         onConfirm={() => confirmDeleteId && deleteCardPermanently(confirmDeleteId)}
         onCancel={() => setConfirmDeleteId(null)}
+      />
+
+      <ConfirmModal
+        open={pendingImport !== null}
+        title="Importar board?"
+        message={
+          pendingImport
+            ? `O arquivo tem ${pendingImport.columns.length} coluna(s) e ${Object.keys(pendingImport.cards).length} card(s). Isso vai SUBSTITUIR o board atual (${board.columns.length} coluna(s), ${totalCards} card(s)). Baixe antes se quiser guardar o atual.`
+            : ''
+        }
+        confirmLabel="Substituir"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={confirmImport}
+        onCancel={() => setPendingImport(null)}
+      />
+
+      <ConfirmModal
+        open={importError !== null}
+        title="Não foi possível importar"
+        message={importError ?? ''}
+        confirmLabel="Entendi"
+        cancelLabel="Fechar"
+        onConfirm={() => setImportError(null)}
+        onCancel={() => setImportError(null)}
+      />
+
+      <ConfirmModal
+        open={confirmSignOut}
+        title="Sair da conta?"
+        message={`Você será deslogado${user?.email ? ' de ' + userDisplayName(user) : ''}. Seus cards continuam salvos na nuvem — é só entrar de novo pra voltar.`}
+        confirmLabel="Sair"
+        cancelLabel="Cancelar"
+        onConfirm={doSignOut}
+        onCancel={() => setConfirmSignOut(false)}
       />
     </div>
   );

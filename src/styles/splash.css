@@ -1,6 +1,5 @@
-/* Staggered tile loader — Ohpe identity
-   5 tiles horizontais em degradê de azuis (identidade),
-   cascade de saída controlada 100% por nth-child + transition-delay. */
+/* Ohpe splash — tile cascade + draw-on arc + orbiting particles
+   + arc close + per-letter spring stagger + breathe pulse */
 
 .loader {
   position: fixed;
@@ -17,7 +16,7 @@
   transition-delay: 0s;
 }
 
-/* Ícone (arco + nome) no centro, aparece depois dos tiles */
+/* --- Icon container --- */
 .loader__icon {
   position: absolute;
   z-index: 1;
@@ -34,34 +33,81 @@
 
 .loader--active .loader__icon {
   opacity: 1;
-  transition: opacity 0.5s 0.4s ease;
+  transition: opacity 0.5s 0.3s ease;
 }
 
-.loader__name {
-  font-family: 'Sora', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  font-size: 56px;
-  font-weight: 300;
-  letter-spacing: -1.5px;
-  color: var(--text-primary);
-  opacity: 0;
-  transform: translateX(-12px);
-  animation: ohpe-name 900ms cubic-bezier(0.16, 1, 0.3, 1) 900ms forwards;
-}
-
+/* --- Mark (arco) --- */
 .loader--active .loader__mark #ohpe-splash-arc {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: ohpe-draw 1100ms cubic-bezier(0.65, 0, 0.35, 1) 300ms forwards;
+  animation: ohpe-draw 1500ms cubic-bezier(0.65, 0, 0.35, 1) 400ms forwards;
 }
 
 @keyframes ohpe-draw {
   to { stroke-dashoffset: 0; }
 }
 
-@keyframes ohpe-name {
+/* --- Orbiting particles --- */
+.loader__orbit {
+  opacity: 0;
+  transform-origin: 0 0;
+}
+
+.loader__orbit    { --orbit-start: 0deg;   }
+.loader__orbit--2 { --orbit-start: 130deg; }
+.loader__orbit--3 { --orbit-start: 240deg; }
+
+.loader--active .loader__orbit {
+  animation:
+    ohpe-spin 2.1s linear 400ms infinite,
+    ohpe-orbit-fade 1900ms ease 400ms forwards;
+}
+
+.loader--active .loader__orbit--2 {
+  animation-duration: 2.8s, 1900ms;
+}
+
+.loader--active .loader__orbit--3 {
+  animation-duration: 3.4s, 1900ms;
+}
+
+@keyframes ohpe-spin {
+  from { transform: rotate(var(--orbit-start, 0deg)); }
+  to   { transform: rotate(calc(var(--orbit-start, 0deg) + 360deg)); }
+}
+
+@keyframes ohpe-orbit-fade {
+  0%   { opacity: 0; }
+  18%  { opacity: 0.9; }
+  75%  { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* --- Name (letras com stagger + overshoot) --- */
+.loader__name {
+  font-family: 'Sora', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-size: 56px;
+  font-weight: 300;
+  letter-spacing: -1.5px;
+  color: var(--text-primary);
+  display: inline-flex;
+}
+
+.loader__letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px) scale(0.9);
+}
+
+.loader--active .loader__letter {
+  animation: ohpe-letter 750ms cubic-bezier(0.34, 1.56, 0.64, 1)
+             calc(2200ms + var(--i) * 130ms) forwards;
+}
+
+@keyframes ohpe-letter {
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -74,14 +120,12 @@
   transition: width 0.7s ease;
 }
 
-/* Posição vertical — tiles usam o token do tema (branco no light, escuro no dark) */
 .loader__tile:nth-child(1) { top:  0%; background: var(--surface-card); }
 .loader__tile:nth-child(2) { top: 20%; background: var(--surface-card); }
 .loader__tile:nth-child(3) { top: 40%; background: var(--surface-card); }
 .loader__tile:nth-child(4) { top: 60%; background: var(--surface-card); }
 .loader__tile:nth-child(5) { top: 80%; background: var(--surface-card); }
 
-/* Entrada: tiles cobrem 100% quando --active */
 .loader--active .loader__tile { width: 100%; }
 .loader--active .loader__tile:nth-child(1) { transition-delay: 0s; }
 .loader--active .loader__tile:nth-child(2) { transition-delay: 0.2s; }
@@ -89,7 +133,6 @@
 .loader--active .loader__tile:nth-child(4) { transition-delay: 0.6s; }
 .loader--active .loader__tile:nth-child(5) { transition-delay: 0.8s; }
 
-/* Saída (sem --active): cascade de retração — top primeiro */
 .loader__tile:nth-child(1) { transition-delay: 0s; }
 .loader__tile:nth-child(2) { transition-delay: 0.15s; }
 .loader__tile:nth-child(3) { transition-delay: 0.3s; }
@@ -100,10 +143,14 @@
   .loader__tile,
   .loader__icon,
   .loader__name,
+  .loader__letter,
+  .loader__orbit,
+  .loader__mark,
   .loader__mark #ohpe-splash-arc {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
     transition-delay: 0ms !important;
   }
 }

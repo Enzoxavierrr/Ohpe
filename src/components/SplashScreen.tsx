@@ -7,14 +7,14 @@ type Props = {
   onDone: () => void;
 };
 
+const LETTERS = ['O', 'h', 'p', 'e'];
+
 export function SplashScreen({ onDone }: Props) {
   const [active, setActive] = useState(true);
 
   useEffect(() => {
-    // hold the loader open while the mark + name animate in
-    const closeAt = window.setTimeout(() => setActive(false), 2500);
-    // total exit: last tile delay (4 * 0.2s) + transition (0.7s) = 1.5s
-    const doneAt = window.setTimeout(onDone, 4000);
+    const closeAt = window.setTimeout(() => setActive(false), 3800);
+    const doneAt = window.setTimeout(onDone, 5300);
     return () => {
       window.clearTimeout(closeAt);
       window.clearTimeout(doneAt);
@@ -44,8 +44,29 @@ export function SplashScreen({ onDone }: Props) {
           strokeLinecap="round"
         >
           <path id="ohpe-splash-arc" d="M 128 44 A 84 84 0 1 0 212 128" />
+          <g transform="translate(128 128)">
+            <g className="loader__orbit">
+              <circle cx="84" cy="0" r="6" fill="currentColor" stroke="none" />
+            </g>
+            <g className="loader__orbit loader__orbit--2">
+              <circle cx="84" cy="0" r="4" fill="currentColor" stroke="none" />
+            </g>
+            <g className="loader__orbit loader__orbit--3">
+              <circle cx="84" cy="0" r="3" fill="currentColor" stroke="none" />
+            </g>
+          </g>
         </svg>
-        <span className="loader__name" aria-hidden="true">Ohpe</span>
+        <span className="loader__name" aria-hidden="true">
+          {LETTERS.map((ch, i) => (
+            <span
+              key={i}
+              className="loader__letter"
+              style={{ ['--i' as any]: i }}
+            >
+              {ch}
+            </span>
+          ))}
+        </span>
       </div>
     </div>
   );

@@ -86,6 +86,7 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [landedCardId, setLandedCardId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmRemoveColumnId, setConfirmRemoveColumnId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<Board | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -318,15 +319,19 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
   }
 
   function removeColumn(columnId: string) {
+    const col = board.columns.find((c) => c.id === columnId);
+    if (!col) return;
+    if (col.cardIds.length > 0) {
+      setConfirmRemoveColumnId(columnId);
+      return;
+    }
+    doRemoveColumn(columnId);
+  }
+
+  function doRemoveColumn(columnId: string) {
     setBoard((prev) => {
       const col = prev.columns.find((c) => c.id === columnId);
       if (!col) return prev;
-      if (col.cardIds.length > 0) {
-        const ok = window.confirm(
-          `Remover a coluna "${col.title}"? Os ${col.cardIds.length} card(s) serão arquivados.`,
-        );
-        if (!ok) return prev;
-      }
       const now = new Date().toISOString();
       const nextCards = { ...prev.cards };
       col.cardIds.forEach((id) => {
@@ -339,6 +344,7 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
         archive: [...col.cardIds, ...prev.archive],
       };
     });
+    setConfirmRemoveColumnId(null);
   }
 
   function addCard(columnId: string, title: string) {
@@ -680,6 +686,21 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
         onClose={() => setArchiveOpen(false)}
         onRestore={restoreCard}
         onDelete={(id) => setConfirmDeleteId(id)}
+      />
+
+      <ConfirmModal
+        open={confirmRemoveColumnId !== null}
+        title="Remover coluna?"
+        message={
+          confirmRemoveColumnId
+            ? `Remover a coluna "${board.columns.find((c) => c.id === confirmRemoveColumnId)?.title ?? ''}"? Os ${board.columns.find((c) => c.id === confirmRemoveColumnId)?.cardIds.length ?? 0} card(s) serão arquivados.`
+            : ''
+        }
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={() => confirmRemoveColumnId && doRemoveColumn(confirmRemoveColumnId)}
+        onCancel={() => setConfirmRemoveColumnId(null)}
       />
 
       <ConfirmModal

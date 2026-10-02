@@ -16,6 +16,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 import { CardDetailModal } from '../components/CardDetailModal';
 import { ArchiveDrawer } from '../components/ArchiveDrawer';
 import { BOARD_STORAGE_KEY, isBoardShape, migrateBoard } from '../hooks/useBoard';
+import { useBoardCards } from '../hooks/useBoardCards';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth, userDisplayName } from '../hooks/useAuth';
 import { downloadJson } from '../utils/downloadJson';
@@ -33,6 +34,11 @@ type BoardPageProps = {
 export function BoardPage({ board, setBoard, syncing, boardName, onBack }: BoardPageProps) {
   const { user, signOut } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
+  const {
+    landedCardId, addCard, updateCard, archiveCard, restoreCard,
+    deleteCardPermanently, restoreAllArchived, deleteAllArchived,
+    archivedCards, totalCards, archivedCount,
+  } = useBoardCards(board, setBoard);
 
   async function doSignOut() {
     setConfirmSignOut(false);
@@ -84,14 +90,14 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
-  const [landedCardId, setLandedCardId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmRestoreAll, setConfirmRestoreAll] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const [confirmRemoveColumnId, setConfirmRemoveColumnId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<Board | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const landedTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -172,21 +178,8 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
     ? board.columns.find((c) => c.cardIds.includes(detailCardId))
     : undefined;
 
-  const archivedCards: CardData[] = board.archive
-    .map((id) => board.cards[id])
-    .filter(Boolean) as CardData[];
-
   function findColumnByCardId(b: Board, cardId: string) {
     return b.columns.find((col) => col.cardIds.includes(cardId));
-  }
-
-  function triggerLanded(cardId: string) {
-    if (landedTimer.current) window.clearTimeout(landedTimer.current);
-    setLandedCardId(cardId);
-    landedTimer.current = window.setTimeout(() => {
-      setLandedCardId(null);
-      landedTimer.current = null;
-    }, 1500);
   }
 
   function handleDragStart(e: DragStartEvent) {
@@ -347,86 +340,6 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
     setConfirmRemoveColumnId(null);
   }
 
-  function addCard(columnId: string, title: string) {
-    const card: CardData = {
-      id: crypto.randomUUID(),
-      title,
-      createdAt: new Date().toISOString(),
-    };
-    setBoard((prev) => ({
-      ...prev,
-      cards: { ...prev.cards, [card.id]: card },
-      columns: prev.columns.map((c) =>
-        c.id === columnId ? { ...c, cardIds: [...c.cardIds, card.id] } : c,
-      ),
-    }));
-  }
-
-  function updateCard(cardId: string, patch: Partial<CardData>) {
-    setBoard((prev) => {
-      const existing = prev.cards[cardId];
-      if (!existing) return prev;
-      const prevStatus = existing.status;
-      const nextStatus = patch.status;
-      if (nextStatus === 'done' && prevStatus !== 'done') {
-        triggerLanded(cardId);
-      }
-      return {
-        ...prev,
-        cards: { ...prev.cards, [cardId]: { ...existing, ...patch } },
-      };
-    });
-  }
-
-  function archiveCard(cardId: string) {
-    setBoard((prev) => {
-      if (!prev.cards[cardId]) return prev;
-      const now = new Date().toISOString();
-      return {
-        ...prev,
-        cards: {
-          ...prev.cards,
-          [cardId]: { ...prev.cards[cardId], archivedAt: now },
-        },
-        columns: prev.columns.map((c) => ({
-          ...c,
-          cardIds: c.cardIds.filter((id) => id !== cardId),
-        })),
-        archive: [cardId, ...prev.archive.filter((id) => id !== cardId)],
-      };
-    });
-  }
-
-  function restoreCard(cardId: string) {
-    setBoard((prev) => {
-      if (!prev.cards[cardId]) return prev;
-      const firstCol = prev.columns[0];
-      if (!firstCol) return prev;
-      const { archivedAt: _unused, ...rest } = prev.cards[cardId];
-      return {
-        ...prev,
-        cards: { ...prev.cards, [cardId]: rest as CardData },
-        columns: prev.columns.map((c, i) =>
-          i === 0 ? { ...c, cardIds: [cardId, ...c.cardIds] } : c,
-        ),
-        archive: prev.archive.filter((id) => id !== cardId),
-      };
-    });
-  }
-
-  function deleteCardPermanently(cardId: string) {
-    setBoard((prev) => {
-      const nextCards = { ...prev.cards };
-      delete nextCards[cardId];
-      return {
-        ...prev,
-        cards: nextCards,
-        archive: prev.archive.filter((id) => id !== cardId),
-      };
-    });
-    setConfirmDeleteId(null);
-  }
-
   function openResetConfirm() {
     if (Object.keys(board.cards).length === 0) return;
     setConfirmResetOpen(true);
@@ -441,9 +354,6 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
     }));
     setConfirmResetOpen(false);
   }
-
-  const totalCards = Object.keys(board.cards).length - board.archive.length;
-  const archivedCount = board.archive.length;
 
   return (
     <div className="board-shell">
@@ -686,6 +596,29 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
         onClose={() => setArchiveOpen(false)}
         onRestore={restoreCard}
         onDelete={(id) => setConfirmDeleteId(id)}
+        onRestoreAll={() => setConfirmRestoreAll(true)}
+        onDeleteAll={() => setConfirmDeleteAll(true)}
+      />
+
+      <ConfirmModal
+        open={confirmRestoreAll}
+        title="Desarquivar todos?"
+        message={`Isso vai mover ${archivedCount} card${archivedCount === 1 ? '' : 's'} de volta pra primeira coluna.`}
+        confirmLabel="Desarquivar todos"
+        cancelLabel="Cancelar"
+        onConfirm={() => { restoreAllArchived(); setConfirmRestoreAll(false); }}
+        onCancel={() => setConfirmRestoreAll(false)}
+      />
+
+      <ConfirmModal
+        open={confirmDeleteAll}
+        title="Apagar todos permanentemente?"
+        message={`Isso vai apagar de vez ${archivedCount} card${archivedCount === 1 ? '' : 's'} arquivado${archivedCount === 1 ? '' : 's'}. Não dá pra desfazer.`}
+        confirmLabel="Apagar todos"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={() => { deleteAllArchived(); setConfirmDeleteAll(false); }}
+        onCancel={() => setConfirmDeleteAll(false)}
       />
 
       <ConfirmModal
@@ -720,7 +653,7 @@ export function BoardPage({ board, setBoard, syncing, boardName, onBack }: Board
         confirmLabel="Apagar"
         cancelLabel="Cancelar"
         destructive
-        onConfirm={() => confirmDeleteId && deleteCardPermanently(confirmDeleteId)}
+        onConfirm={() => { if (confirmDeleteId) { deleteCardPermanently(confirmDeleteId); setConfirmDeleteId(null); } }}
         onCancel={() => setConfirmDeleteId(null)}
       />
 

@@ -7,9 +7,11 @@ type Props = {
   onClose: () => void;
   onRestore: (cardId: string) => void;
   onDelete: (cardId: string) => void;
+  onRestoreAll: () => void;
+  onDeleteAll: () => void;
 };
 
-export function ArchiveDrawer({ open, cards, onClose, onRestore, onDelete }: Props) {
+export function ArchiveDrawer({ open, cards, onClose, onRestore, onDelete, onRestoreAll, onDeleteAll }: Props) {
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -40,6 +42,27 @@ export function ArchiveDrawer({ open, cards, onClose, onRestore, onDelete }: Pro
             ×
           </button>
         </header>
+
+        {cards.length > 0 && (
+          <div className="drawer__bulk">
+            <button
+              type="button"
+              className="drawer__bulk-btn drawer__bulk-btn--primary"
+              onClick={onRestoreAll}
+              title="Restaurar todos os cards arquivados"
+            >
+              Desarquivar todos
+            </button>
+            <button
+              type="button"
+              className="drawer__bulk-btn drawer__bulk-btn--danger"
+              onClick={onDeleteAll}
+              title="Apagar permanentemente todos os cards arquivados"
+            >
+              Apagar todos
+            </button>
+          </div>
+        )}
 
         {cards.length === 0 ? (
           <div className="drawer__empty">

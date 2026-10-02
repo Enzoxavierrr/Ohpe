@@ -32,8 +32,7 @@ export function ConfigErrorPage({ missing }: Props) {
         <ul className="config-missing">
           {missing.map((name) => (
             <li key={name}><code>{name}</code></li>
-          ))}
-        </ul>
+          ))} </ul>
 
         <p className="login-subtitle" style={{ marginTop: 20, marginBottom: 0 }}>
           Em desenvolvimento local, copie <code>.env.local.example</code> pra

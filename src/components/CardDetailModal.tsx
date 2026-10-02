@@ -29,6 +29,37 @@ function labelOf(status: CardStatus) {
   return STATUS_OPTIONS.find((o) => o.value === status)?.label ?? 'Sem status';
 }
 
+function buildClaudePrompt(input: {
+  title: string;
+  status: CardStatus;
+  description: string;
+  resolution: string;
+}): string {
+  const existing: string[] = [];
+  if (input.description.trim()) {
+    existing.push(`- Já anotado na descrição: ${input.description.trim()}`);
+  }
+  if (input.resolution.trim()) {
+    existing.push(`- Já anotado em "como resolvi": ${input.resolution.trim()}`);
+  }
+
+  return [
+    'Documente essa demanda num card do meu kanban Ohpe. Com base em TODO o contexto da nossa conversa acima, me retorne EXATAMENTE neste formato, sem comentários antes nem depois:',
+    '',
+    '## Descrição',
+    '<2 a 4 linhas: qual era o problema/objetivo, por que surgiu, o que estava em jogo. Direto, sem enrolação.>',
+    '',
+    '## Como resolvi',
+    '<passo a passo em markdown do caminho real que seguimos — decisões importantes, trechos de código quando fizer sentido, armadilhas que evitamos, links úteis. Escreva pensando como memória pro meu eu-futuro reabrir esse card daqui a 3 meses e lembrar na hora.>',
+    '',
+    '---',
+    'Contexto do card:',
+    `- Título: "${input.title.trim() || 'sem título'}"`,
+    `- Status atual: ${labelOf(input.status)}`,
+    ...existing,
+  ].join('\n');
+}
+
 type EditableNoteProps = {
   value: string;
   onChange: (next: string) => void;
@@ -127,6 +158,8 @@ export function CardDetailModal({
   const [resolution, setResolution] = useState('');
   const [status, setStatus] = useState<CardStatus>('none');
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<number | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -177,6 +210,36 @@ export function CardDetailModal({
     setStatus(next);
     setPickerOpen(false);
   }
+
+  async function copyPromptForClaude() {
+    const prompt = buildClaudePrompt({ title, status, description, resolution });
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(prompt);
+      } else {
+        // fallback antigo
+        const ta = document.createElement('textarea');
+        ta.value = prompt;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      if (copiedTimer.current) window.clearTimeout(copiedTimer.current);
+      setCopied(true);
+      copiedTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('[CardDetailModal] copy falhou', err);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current) window.clearTimeout(copiedTimer.current);
+    };
+  }, []);
 
   if (!card) {
     return (
@@ -262,7 +325,27 @@ export function CardDetailModal({
           )}
         </div>
 
-        <label className="card-detail__label">Descrição</label>
+        <label className="card-detail__label card-detail__label--with-action">
+          Descrição
+          <button
+            type="button"
+            className={`card-detail__copy-icon ${copied ? 'is-copied' : ''}`}
+            onClick={copyPromptForClaude}
+            aria-label="Copiar Template"
+            title="Copiar Template"
+          >
+            {copied ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            )}
+          </button>
+        </label>
         <EditableNote
           value={description}
           onChange={setDescription}

@@ -967,6 +967,48 @@
   border-left: 3px solid #86efac;
 }
 
+/* ---- Ícone "Copiar Template" ---- */
+.card-detail__label--with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.card-detail__copy-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  background: transparent;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.card-detail__copy-icon:hover {
+  color: var(--brand-primary);
+  background: var(--surface-elevated);
+}
+.card-detail__copy-icon:active { transform: scale(0.92); }
+.card-detail__copy-icon.is-copied {
+  color: #10b981;
+  animation: copy-icon-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card-detail__copy-icon.is-copied:hover {
+  color: #065f46;
+  background: rgba(167, 243, 208, 0.4);
+}
+:root[data-theme="dark"] .card-detail__copy-icon.is-copied {
+  color: #6ee7b7;
+}
+@keyframes copy-icon-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-detail__copy-icon.is-copied { animation-duration: 1ms; }
+}
+
 /* ---- Nota formatada (modo visual quando já tem conteúdo) ---- */
 .card-detail__note {
   position: relative;

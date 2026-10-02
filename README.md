@@ -2,7 +2,7 @@
 
 <br />
 
-<img src="docs/hero.svg" alt="Ohpe — Kanban minimalista com sync na nuvem" width="100%" />
+<img src="docs/banner.svg" alt="Ohpe — Kanban minimalista com sync na nuvem" width="100%" />
 
 <br />
 <br />

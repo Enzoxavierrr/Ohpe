@@ -9,6 +9,7 @@ export type CardData = {
   impediment?: string;
   improvements?: string;
   archivedAt?: string;
+  archivedFromColumnId?: string;
   status?: ColumnStatus;
 };
 

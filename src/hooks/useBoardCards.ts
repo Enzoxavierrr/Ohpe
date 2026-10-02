@@ -49,11 +49,16 @@ export function useBoardCards(board: Board, setBoard: SetBoard) {
     setBoard((prev) => {
       if (!prev.cards[cardId]) return prev;
       const now = new Date().toISOString();
+      const fromCol = prev.columns.find((c) => c.cardIds.includes(cardId));
       return {
         ...prev,
         cards: {
           ...prev.cards,
-          [cardId]: { ...prev.cards[cardId], archivedAt: now },
+          [cardId]: {
+            ...prev.cards[cardId],
+            archivedAt: now,
+            archivedFromColumnId: fromCol?.id,
+          },
         },
         columns: prev.columns.map((c) => ({
           ...c,
@@ -67,14 +72,17 @@ export function useBoardCards(board: Board, setBoard: SetBoard) {
   const restoreCard = useCallback((cardId: string) => {
     setBoard((prev) => {
       if (!prev.cards[cardId]) return prev;
-      const firstCol = prev.columns[0];
-      if (!firstCol) return prev;
-      const { archivedAt: _unused, ...rest } = prev.cards[cardId];
+      const card = prev.cards[cardId];
+      const targetCol =
+        (card.archivedFromColumnId && prev.columns.find((c) => c.id === card.archivedFromColumnId))
+        || prev.columns[0];
+      if (!targetCol) return prev;
+      const { archivedAt: _a, archivedFromColumnId: _b, ...rest } = card;
       return {
         ...prev,
         cards: { ...prev.cards, [cardId]: rest as CardData },
-        columns: prev.columns.map((c, i) =>
-          i === 0 ? { ...c, cardIds: [cardId, ...c.cardIds] } : c,
+        columns: prev.columns.map((c) =>
+          c.id === targetCol.id ? { ...c, cardIds: [cardId, ...c.cardIds] } : c,
         ),
         archive: prev.archive.filter((id) => id !== cardId),
       };
@@ -96,20 +104,34 @@ export function useBoardCards(board: Board, setBoard: SetBoard) {
   const restoreAllArchived = useCallback(() => {
     setBoard((prev) => {
       if (prev.archive.length === 0) return prev;
-      const firstCol = prev.columns[0];
-      if (!firstCol) return prev;
+      if (prev.columns.length === 0) return prev;
+
+      // Primeira passagem: montar mapa de destino antes de alterar os cards
+      const insertions: Record<string, string[]> = {};
+      for (const id of prev.archive) {
+        if (!prev.cards[id]) continue;
+        const originId = prev.cards[id].archivedFromColumnId;
+        const col =
+          (originId ? prev.columns.find((c) => c.id === originId) : undefined) ?? prev.columns[0];
+        if (!insertions[col.id]) insertions[col.id] = [];
+        insertions[col.id].push(id);
+      }
+
+      // Segunda passagem: limpar campos de arquivo dos cards
       const nextCards = { ...prev.cards };
       for (const id of prev.archive) {
-        if (nextCards[id]) {
-          const { archivedAt: _unused, ...rest } = nextCards[id];
-          nextCards[id] = rest as CardData;
-        }
+        if (!nextCards[id]) continue;
+        const { archivedAt: _a, archivedFromColumnId: _b, ...rest } = nextCards[id];
+        nextCards[id] = rest as CardData;
       }
+
       return {
         ...prev,
         cards: nextCards,
-        columns: prev.columns.map((c, i) =>
-          i === 0 ? { ...c, cardIds: [...prev.archive, ...c.cardIds] } : c,
+        columns: prev.columns.map((c) =>
+          insertions[c.id]
+            ? { ...c, cardIds: [...insertions[c.id], ...c.cardIds] }
+            : c,
         ),
         archive: [],
       };

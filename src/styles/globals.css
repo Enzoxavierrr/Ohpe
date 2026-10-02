@@ -67,6 +67,7 @@ body {
     radial-gradient(1200px 600px at 90% -10%, rgba(86, 126, 187, 0.22), transparent 60%),
     radial-gradient(900px 500px at -10% 110%, rgba(43, 76, 126, 0.16), transparent 60%),
     var(--surface-muted);
+  background-attachment: fixed;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

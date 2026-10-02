@@ -22,13 +22,6 @@ import { downloadJson } from '../utils/downloadJson';
 import type { Board, CardData, ColumnStatus } from '../types/board';
 import '../styles/board.css';
 
-const STATUS_CYCLE: (ColumnStatus | undefined)[] = [undefined, 'todo', 'doing', 'blocked', 'done'];
-
-function nextStatus(curr: ColumnStatus | undefined): ColumnStatus | undefined {
-  const i = STATUS_CYCLE.indexOf(curr);
-  return STATUS_CYCLE[(i + 1) % STATUS_CYCLE.length];
-}
-
 export function BoardPage() {
   const { user, signOut } = useAuth();
   const { board, setBoard, syncing } = useBoard(user?.id ?? null);
@@ -240,11 +233,11 @@ export function BoardPage() {
     }));
   }
 
-  function cycleColumnStatus(columnId: string) {
+  function setColumnStatus(columnId: string, next: ColumnStatus | undefined) {
     setBoard((prev) => ({
       ...prev,
       columns: prev.columns.map((c) =>
-        c.id === columnId ? { ...c, status: nextStatus(c.status) } : c,
+        c.id === columnId ? { ...c, status: next } : c,
       ),
     }));
   }
@@ -545,7 +538,7 @@ export function BoardPage() {
                   onAddCard={(title) => addCard(col.id, title)}
                   onOpenCard={(cardId) => setDetailCardId(cardId)}
                   onArchiveCard={(cardId) => archiveCard(cardId)}
-                  onCycleStatus={() => cycleColumnStatus(col.id)}
+                  onSetStatus={(next) => setColumnStatus(col.id, next)}
                   onResize={(w) => resizeColumn(col.id, w)}
                 />
               ))}

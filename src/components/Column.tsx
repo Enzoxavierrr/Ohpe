@@ -14,17 +14,22 @@ type Props = {
   onAddCard: (title: string) => void;
   onOpenCard: (cardId: string) => void;
   onArchiveCard: (cardId: string) => void;
-  onCycleStatus: () => void;
+  onSetStatus: (status: ColumnStatus | undefined) => void;
   onResize: (width: number) => void;
 };
 
-const STATUS_LABEL: Record<ColumnStatus | 'none', string> = {
-  none: 'sem status',
-  todo: 'a fazer',
-  doing: 'sendo feito',
-  blocked: 'impedimento',
-  done: 'feito',
+type StatusKey = ColumnStatus | 'none';
+
+const STATUS_LABEL: Record<StatusKey, string> = {
+  none: 'Sem status',
+  todo: 'A fazer',
+  doing: 'Sendo feito',
+  blocked: 'Impedimento',
+  improvements: 'Melhorias',
+  done: 'Feito',
 };
+
+const STATUS_OPTIONS: StatusKey[] = ['none', 'todo', 'doing', 'blocked', 'improvements', 'done'];
 
 const MIN_WIDTH = 240;
 const MAX_WIDTH = 560;
@@ -32,11 +37,13 @@ const MAX_WIDTH = 560;
 export function Column({
   column, cards, landedCardId,
   onRename, onRemove, onAddCard, onOpenCard, onArchiveCard,
-  onCycleStatus, onResize,
+  onSetStatus, onResize,
 }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(column.title);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     attributes,
@@ -58,6 +65,29 @@ export function Column({
   useEffect(() => {
     if (editing) inputRef.current?.focus();
   }, [editing]);
+
+  useEffect(() => {
+    if (!statusMenuOpen) return;
+    function onClick(e: MouseEvent) {
+      if (statusMenuRef.current && !statusMenuRef.current.contains(e.target as Node)) {
+        setStatusMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setStatusMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [statusMenuOpen]);
+
+  function pickStatus(next: StatusKey) {
+    onSetStatus(next === 'none' ? undefined : next);
+    setStatusMenuOpen(false);
+  }
 
   useEffect(() => {
     if (!resizing) return;
@@ -136,15 +166,42 @@ export function Column({
           </svg>
         </button>
 
-        <button
-          type="button"
-          className={`column-status column-status--${status}`}
-          onClick={onCycleStatus}
-          title={`Status: ${STATUS_LABEL[status]} — clique para mudar`}
-          aria-label={`Status da coluna: ${STATUS_LABEL[status]}. Clique para alternar.`}
-        >
-          <span className="column-status__dot" aria-hidden="true" />
-        </button>
+        <div className="column-status-wrap" ref={statusMenuRef}>
+          <button
+            type="button"
+            className={`column-status column-status--${status}`}
+            onClick={() => setStatusMenuOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={statusMenuOpen}
+            title={`Tag: ${STATUS_LABEL[status]}`}
+            aria-label={`Tag da coluna: ${STATUS_LABEL[status]}. Clique para escolher.`}
+          >
+            <span className="column-status__dot" aria-hidden="true" />
+          </button>
+          {statusMenuOpen && (
+            <ul className="column-status-menu" role="menu">
+              <li className="column-status-menu__title">Escolha a tag</li>
+              {STATUS_OPTIONS.map((opt) => (
+                <li key={opt}>
+                  <button
+                    type="button"
+                    className={`column-status-menu__item ${status === opt ? 'is-selected' : ''}`}
+                    onClick={() => pickStatus(opt)}
+                    role="menuitem"
+                  >
+                    <span className={`column-status-menu__dot column-status-menu__dot--${opt}`} aria-hidden="true" />
+                    <span className="column-status-menu__label">{STATUS_LABEL[opt]}</span>
+                    {status === opt && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {editing ? (
           <input

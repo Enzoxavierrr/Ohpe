@@ -8,6 +8,7 @@ const SAVE_DEBOUNCE_MS = 800;
 function guessStatus(title: string): ColumnStatus | undefined {
   const t = title.trim().toLowerCase();
   if (/\bfeito\b|\bdone\b|conclu/.test(t)) return 'done';
+  if (/\bmelhori|improvement|refino/.test(t)) return 'improvements';
   if (/\bimpedi|bloquea|blocked|travad/.test(t)) return 'blocked';
   if (/\bfazendo\b|\bsendo\b|doing|progress|andamento/.test(t)) return 'doing';
   if (/\ba fazer\b|\btodo\b|\bbacklog\b|\bpendente/.test(t)) return 'todo';

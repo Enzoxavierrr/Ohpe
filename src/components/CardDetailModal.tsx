@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { CardData, ColumnStatus } from '../types/board';
 import '../styles/modal.css';
+
+function autoSize(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
 
 type CardStatus = ColumnStatus | 'none';
 
@@ -14,17 +20,19 @@ type Props = {
     description?: string;
     resolution?: string;
     impediment?: string;
+    improvements?: string;
     status?: ColumnStatus;
   }) => void;
   onArchive: () => void;
 };
 
 const STATUS_OPTIONS: { value: CardStatus; label: string }[] = [
-  { value: 'none',    label: 'Sem status' },
-  { value: 'todo',    label: 'A fazer' },
-  { value: 'doing',   label: 'Sendo feito' },
-  { value: 'blocked', label: 'Impedimento' },
-  { value: 'done',    label: 'Feito' },
+  { value: 'none',         label: 'Sem status' },
+  { value: 'todo',         label: 'A fazer' },
+  { value: 'doing',        label: 'Sendo feito' },
+  { value: 'blocked',      label: 'Impedimento' },
+  { value: 'improvements', label: 'Melhorias' },
+  { value: 'done',         label: 'Feito' },
 ];
 
 function labelOf(status: CardStatus) {
@@ -62,7 +70,7 @@ function buildClaudePrompt(input: {
   ].join('\n');
 }
 
-type NoteVariant = 'default' | 'resolution' | 'blocked';
+type NoteVariant = 'default' | 'resolution' | 'blocked' | 'improvements';
 
 type EditableNoteProps = {
   value: string;
@@ -82,7 +90,12 @@ function EditableNote({ value, onChange, placeholder, rows, variant = 'default' 
     if (!el) return;
     el.focus();
     el.setSelectionRange(el.value.length, el.value.length);
+    autoSize(el);
   }, [editing]);
+
+  useLayoutEffect(() => {
+    if (editing) autoSize(textareaRef.current);
+  }, [value, editing]);
 
   function handleBlur() {
     setEditing(false);
@@ -102,8 +115,9 @@ function EditableNote({ value, onChange, placeholder, rows, variant = 'default' 
   const hasContent = value.trim().length > 0;
 
   const variantClass =
-    variant === 'resolution' ? '--resolution' :
-    variant === 'blocked'    ? '--blocked'    : '';
+    variant === 'resolution'   ? '--resolution'   :
+    variant === 'blocked'      ? '--blocked'      :
+    variant === 'improvements' ? '--improvements' : '';
 
   if (editing) {
     return (
@@ -154,11 +168,17 @@ export function CardDetailModal({
   const [description, setDescription] = useState('');
   const [resolution, setResolution] = useState('');
   const [impediment, setImpediment] = useState('');
+  const [improvements, setImprovements] = useState('');
   const [status, setStatus] = useState<CardStatus>('none');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<number | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    if (open) autoSize(titleRef.current);
+  }, [title, open]);
 
   useEffect(() => {
     if (!open || !card) return;
@@ -166,6 +186,7 @@ export function CardDetailModal({
     setDescription(card.description ?? '');
     setResolution(card.resolution ?? '');
     setImpediment(card.impediment ?? '');
+    setImprovements(card.improvements ?? '');
     setStatus((card.status as CardStatus) ?? 'none');
     setPickerOpen(false);
   }, [open, card]);
@@ -201,6 +222,7 @@ export function CardDetailModal({
       description: description.trim() ? description : undefined,
       resolution: resolution.trim() ? resolution : undefined,
       impediment: impediment.trim() ? impediment : undefined,
+      improvements: improvements.trim() ? improvements : undefined,
       status: status === 'none' ? undefined : status,
     });
     onClose();
@@ -211,15 +233,13 @@ export function CardDetailModal({
     setPickerOpen(false);
   }
 
-  async function copyPromptForClaude() {
-    const prompt = buildClaudePrompt({ title, status, description, resolution });
+  async function doCopy(text: string) {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(prompt);
+        await navigator.clipboard.writeText(text);
       } else {
-        // fallback antigo
         const ta = document.createElement('textarea');
-        ta.value = prompt;
+        ta.value = text;
         ta.style.position = 'fixed';
         ta.style.opacity = '0';
         document.body.appendChild(ta);
@@ -233,6 +253,22 @@ export function CardDetailModal({
     } catch (err) {
       console.error('[CardDetailModal] copy falhou', err);
     }
+  }
+
+  function copyPromptForClaude() {
+    const prompt = buildClaudePrompt({ title, status, description, resolution });
+    doCopy(prompt);
+  }
+
+  function copyImprovementsAsTopics() {
+    const bullets = improvements
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => (line.startsWith('-') || line.startsWith('*') ? line : `- ${line}`))
+      .join('\n');
+    const header = title.trim() ? `Melhorias — ${title.trim()}\n\n` : 'Melhorias\n\n';
+    doCopy(header + bullets);
   }
 
   useEffect(() => {
@@ -273,11 +309,12 @@ export function CardDetailModal({
 
         <textarea
           id="card-detail-title"
+          ref={titleRef}
           className="card-detail__title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Título do card"
-          rows={2}
+          rows={1}
         />
 
         <label className="card-detail__label">Status</label>
@@ -334,6 +371,37 @@ export function CardDetailModal({
               placeholder="Descreva o impedimento — o que travou, quem/o que você está esperando, qual decisão falta. Serve pra não esquecer quando voltar."
               rows={6}
               variant="blocked"
+            />
+          </>
+        ) : status === 'improvements' ? (
+          <>
+            <label className="card-detail__label card-detail__label--with-action">
+              Melhorias (uma por linha)
+              <button
+                type="button"
+                className={`card-detail__copy-icon ${copied ? 'is-copied' : ''}`}
+                onClick={copyImprovementsAsTopics}
+                aria-label="Copiar como tópicos"
+                title="Copiar como tópicos"
+              >
+                {copied ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                )}
+              </button>
+            </label>
+            <EditableNote
+              value={improvements}
+              onChange={setImprovements}
+              placeholder={'Liste as melhorias, uma por linha. Ex:\nAjustar contraste no tema escuro\nMelhorar carregamento inicial\nAdicionar atalhos de teclado'}
+              rows={6}
+              variant="improvements"
             />
           </>
         ) : (

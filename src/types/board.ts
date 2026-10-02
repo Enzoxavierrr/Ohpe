@@ -1,4 +1,4 @@
-export type ColumnStatus = 'todo' | 'doing' | 'done' | 'blocked';
+export type ColumnStatus = 'todo' | 'doing' | 'done' | 'blocked' | 'improvements';
 
 export type CardData = {
   id: string;
@@ -7,6 +7,7 @@ export type CardData = {
   description?: string;
   resolution?: string;
   impediment?: string;
+  improvements?: string;
   archivedAt?: string;
   status?: ColumnStatus;
 };

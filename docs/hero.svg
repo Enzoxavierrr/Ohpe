@@ -8,165 +8,156 @@
       <stop offset="0" stop-color="#2b4c7e"/>
       <stop offset="1" stop-color="#567ebb"/>
     </linearGradient>
-    <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0" stop-color="#567ebb" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="#567ebb" stop-opacity="0"/>
-    </linearGradient>
-    <filter id="s" x="-10%" y="-10%" width="120%" height="130%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
-      <feOffset dy="4"/>
-      <feComponentTransfer><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
-      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="ss" x="-5%" y="-5%" width="110%" height="115%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-      <feOffset dy="2"/>
-      <feComponentTransfer><feFuncA type="linear" slope="0.08"/></feComponentTransfer>
-      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <clipPath id="screen"><rect x="260" y="28" width="660" height="344" rx="12"/></clipPath>
     <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
-      <circle cx="16" cy="16" r="0.8" fill="#567ebb" opacity="0.18"/>
+      <circle cx="16" cy="16" r="0.9" fill="#567ebb" opacity="0.2"/>
     </pattern>
-    <style>
-      .f  { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
-      .fs { font-family: 'Sora', 'IBM Plex Sans', sans-serif; }
-      .c1 { fill: #1f1f20; }
-      .c2 { fill: #2b4c7e; }
-      .c3 { fill: #567ebb; }
-      .c4 { fill: #606d80; }
-    </style>
   </defs>
 
   <!-- Background -->
   <rect width="960" height="400" fill="url(#bg)"/>
   <rect width="960" height="400" fill="url(#dots)"/>
-  <ellipse cx="600" cy="200" rx="400" ry="250" fill="url(#glow)"/>
+  <ellipse cx="600" cy="200" rx="380" ry="230" fill="#567ebb" opacity="0.07"/>
 
-  <!-- Left side: branding -->
-  <g transform="translate(48, 100)">
-    <g transform="translate(0, 0)">
-      <rect width="56" height="56" rx="14" fill="url(#mark)"/>
-      <g transform="translate(28, 28)">
-        <path d="M 0 -16 A 16 16 0 1 0 16 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-      </g>
-    </g>
-    <text x="0" y="100" class="f fs c1" font-size="42" font-weight="300" letter-spacing="-1">Ohpe</text>
-    <text x="0" y="130" class="f c4" font-size="14">Kanban minimalista</text>
-    <text x="0" y="150" class="f c4" font-size="14">com sync na nuvem</text>
+  <!-- ── Left: branding ── -->
+  <g transform="translate(52, 96)">
 
-    <g transform="translate(0, 180)">
-      <rect width="70" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
-      <text x="35" y="15" text-anchor="middle" class="f c2" font-size="10" font-weight="600">React 18</text>
-      <rect x="78" width="52" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
-      <text x="104" y="15" text-anchor="middle" class="f c2" font-size="10" font-weight="600">Vite 5</text>
-      <rect x="0" y="28" width="76" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
-      <text x="38" y="43" text-anchor="middle" class="f c2" font-size="10" font-weight="600">Supabase</text>
-      <rect x="84" y="28" width="68" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
-      <text x="118" y="43" text-anchor="middle" class="f c2" font-size="10" font-weight="600">dnd-kit</text>
-    </g>
+    <!-- Logo tile -->
+    <rect width="58" height="58" rx="15" fill="url(#mark)"/>
+    <path d="M 29 13 A 16 16 0 1 0 45 29" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Name -->
+    <text x="0" y="104" font-family="system-ui, sans-serif" font-size="44" font-weight="300" fill="#1f1f20" letter-spacing="-1">Ohpe</text>
+    <text x="0" y="130" font-family="system-ui, sans-serif" font-size="14" fill="#606d80">Kanban minimalista</text>
+    <text x="0" y="150" font-family="system-ui, sans-serif" font-size="14" fill="#606d80">com sync na nuvem</text>
+
+    <!-- Tech pills -->
+    <rect x="0"  y="178" width="74"  height="22" rx="11" fill="#2b4c7e" opacity="0.12"/>
+    <text x="37" y="193" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#2b4c7e" text-anchor="middle">React 18</text>
+
+    <rect x="82"  y="178" width="54" height="22" rx="11" fill="#2b4c7e" opacity="0.12"/>
+    <text x="109" y="193" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#2b4c7e" text-anchor="middle">Vite 5</text>
+
+    <rect x="0"   y="206" width="80" height="22" rx="11" fill="#2b4c7e" opacity="0.12"/>
+    <text x="40"  y="221" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#2b4c7e" text-anchor="middle">Supabase</text>
+
+    <rect x="88"  y="206" width="68" height="22" rx="11" fill="#2b4c7e" opacity="0.12"/>
+    <text x="122" y="221" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#2b4c7e" text-anchor="middle">dnd-kit</text>
   </g>
 
-  <!-- Right side: app mockup (browser frame) -->
-  <g transform="translate(260, 28)" filter="url(#s)">
-    <!-- Browser chrome -->
-    <rect width="660" height="344" rx="12" fill="#fff"/>
-    <rect width="660" height="32" rx="12" fill="#f4f6fa"/>
-    <rect y="24" width="660" height="8" fill="#f4f6fa"/>
-    <circle cx="18" cy="16" r="5" fill="#ff5f56" opacity="0.7"/>
-    <circle cx="36" cy="16" r="5" fill="#ffbd2e" opacity="0.7"/>
-    <circle cx="54" cy="16" r="5" fill="#27c93f" opacity="0.7"/>
-    <rect x="200" y="8" width="260" height="16" rx="8" fill="#e8eaee"/>
-    <text x="330" y="20" text-anchor="middle" class="f c4" font-size="9">ohpe.vercel.app</text>
-    <line x1="0" y1="32" x2="660" y2="32" stroke="#e8eaee"/>
+  <!-- ── Right: browser mockup ── -->
+  <g transform="translate(268, 28)">
 
-    <!-- App content area -->
-    <g transform="translate(0, 32)">
-      <rect width="660" height="312" fill="#dce0e6"/>
+    <!-- Window shadow (manual, no filter) -->
+    <rect x="4" y="8" width="664" height="348" rx="13" fill="#1f1f20" opacity="0.08"/>
 
-      <!-- Header -->
-      <rect width="660" height="36" fill="#fff" opacity="0.85"/>
-      <g transform="translate(14, 10)">
-        <path d="M 0 -6 A 6 6 0 1 0 6 0" fill="none" stroke="#2b4c7e" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Window frame -->
+    <rect width="664" height="348" rx="12" fill="#ffffff"/>
+
+    <!-- Title bar -->
+    <rect width="664" height="32" rx="12" fill="#f0f2f7"/>
+    <rect y="22" width="664" height="10" fill="#f0f2f7"/>
+
+    <!-- Traffic lights -->
+    <circle cx="20" cy="16" r="5" fill="#ff5f56" opacity="0.75"/>
+    <circle cx="38" cy="16" r="5" fill="#ffbd2e" opacity="0.75"/>
+    <circle cx="56" cy="16" r="5" fill="#27c93f" opacity="0.75"/>
+
+    <!-- URL bar -->
+    <rect x="200" y="8" width="264" height="16" rx="8" fill="#e2e5ec"/>
+    <text x="332" y="20" font-family="system-ui, sans-serif" font-size="9" fill="#606d80" text-anchor="middle">ohpe.vercel.app</text>
+
+    <!-- Separator -->
+    <line x1="0" y1="32" x2="664" y2="32" stroke="#e2e5ec" stroke-width="1"/>
+
+    <!-- App shell -->
+    <rect y="32" width="664" height="316" fill="#dce0e6"/>
+
+    <!-- App header bar -->
+    <rect y="32" width="664" height="38" fill="#ffffff" opacity="0.88"/>
+    <path d="M 19 43 A 7 7 0 1 0 26 50" fill="none" stroke="#2b4c7e" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="40" y="56" font-family="system-ui, sans-serif" font-size="13" font-weight="300" fill="#1f1f20">Ohpe</text>
+    <text x="72" y="56" font-family="system-ui, sans-serif" font-size="13" fill="#606d80">/</text>
+    <text x="83" y="56" font-family="system-ui, sans-serif" font-size="12" fill="#606d80">Meu Projeto</text>
+
+    <!-- ── COLUMN 1: A fazer ── -->
+    <g transform="translate(16, 80)">
+      <rect x="3" y="3" width="196" height="244" rx="12" fill="#1f1f20" opacity="0.06"/>
+      <rect width="196" height="244" rx="12" fill="#ffffff" opacity="0.94"/>
+
+      <text x="14" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1f1f20">A fazer</text>
+      <rect x="66" y="11" width="28" height="16" rx="8" fill="#dce0e6"/>
+      <text x="80" y="23" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#2b4c7e" text-anchor="middle">3</text>
+
+      <!-- card -->
+      <g transform="translate(10, 36)">
+        <rect width="176" height="32" rx="8" fill="#ffffff" stroke="#e8eaee" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="26" rx="1.5" fill="#567ebb"/>
+        <text x="15" y="21" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Definir endpoints da API</text>
       </g>
-      <text x="30" y="22" class="f fs c1" font-size="12" font-weight="300">Ohpe</text>
-      <text x="62" y="22" class="f c4" font-size="12" font-weight="300">/</text>
-      <text x="72" y="22" class="f c4" font-size="11">Meu Projeto</text>
-
-      <!-- Columns -->
-      <!-- Col 1: A fazer -->
-      <g transform="translate(16, 48)" filter="url(#ss)">
-        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
-        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">A fazer</text>
-        <rect x="62" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
-        <text x="75" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">3</text>
-
-        <!-- Cards -->
-        <g transform="translate(10, 34)">
-          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#567ebb"/>
-          <text x="14" y="19" class="f c1" font-size="10">Definir endpoints da API</text>
-        </g>
-        <g transform="translate(10, 70)">
-          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#567ebb"/>
-          <text x="14" y="19" class="f c1" font-size="10">Escrever documentação</text>
-        </g>
-        <g transform="translate(10, 106)">
-          <rect width="176" height="42" rx="8" fill="#fff" stroke="#fca5a5" stroke-opacity="0.5"/>
-          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#fca5a5"/>
-          <text x="14" y="17" class="f c1" font-size="10">Deploy no staging</text>
-          <rect x="14" y="24" width="56" height="14" rx="7" fill="#fca5a5" opacity="0.2"/>
-          <text x="42" y="34" text-anchor="middle" class="f" font-size="8" font-weight="600" fill="#b91c1c">bloqueado</text>
-        </g>
+      <g transform="translate(10, 74)">
+        <rect width="176" height="32" rx="8" fill="#ffffff" stroke="#e8eaee" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="26" rx="1.5" fill="#567ebb"/>
+        <text x="15" y="21" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Escrever documentação</text>
       </g>
-
-      <!-- Col 2: Fazendo -->
-      <g transform="translate(224, 48)" filter="url(#ss)">
-        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
-        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">Fazendo</text>
-        <rect x="66" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
-        <text x="79" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">2</text>
-
-        <g transform="translate(10, 34)">
-          <rect width="176" height="42" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#f5cf5c"/>
-          <text x="14" y="17" class="f c1" font-size="10">Ajustar drag &amp; drop</text>
-          <rect x="14" y="24" width="30" height="14" rx="7" fill="#dce0e6" opacity="0.6"/>
-          <text x="29" y="34" text-anchor="middle" class="f c4" font-size="8">nota</text>
-        </g>
-        <g transform="translate(10, 82)">
-          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#fdba74"/>
-          <text x="14" y="19" class="f c1" font-size="10">Refatorar autenticação</text>
-        </g>
-      </g>
-
-      <!-- Col 3: Feito -->
-      <g transform="translate(432, 48)" filter="url(#ss)">
-        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
-        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">Feito</text>
-        <rect x="44" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
-        <text x="57" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">3</text>
-
-        <g transform="translate(10, 34)">
-          <rect width="176" height="42" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#86efac"/>
-          <text x="14" y="17" class="f c1" font-size="10">Setup Vite + TypeScript</text>
-          <rect x="14" y="24" width="54" height="14" rx="7" fill="#86efac" opacity="0.25"/>
-          <text x="41" y="34" text-anchor="middle" class="f" font-size="8" font-weight="600" fill="#16a34a">resolvido</text>
-        </g>
-        <g transform="translate(10, 82)">
-          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#86efac"/>
-          <text x="14" y="19" class="f c1" font-size="10">Paleta e tipografia</text>
-        </g>
-        <g transform="translate(10, 118)">
-          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
-          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#86efac"/>
-          <text x="14" y="19" class="f c1" font-size="10">Login + sync Supabase</text>
-        </g>
+      <g transform="translate(10, 112)">
+        <rect width="176" height="44" rx="8" fill="#fff8f8" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="38" rx="1.5" fill="#fca5a5"/>
+        <text x="15" y="18" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Deploy no staging</text>
+        <rect x="15" y="26" width="60" height="14" rx="7" fill="#fca5a5" opacity="0.22"/>
+        <text x="45" y="37" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#b91c1c" text-anchor="middle">bloqueado</text>
       </g>
     </g>
+
+    <!-- ── COLUMN 2: Fazendo ── -->
+    <g transform="translate(228, 80)">
+      <rect x="3" y="3" width="196" height="244" rx="12" fill="#1f1f20" opacity="0.06"/>
+      <rect width="196" height="244" rx="12" fill="#ffffff" opacity="0.94"/>
+
+      <text x="14" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1f1f20">Fazendo</text>
+      <rect x="70" y="11" width="28" height="16" rx="8" fill="#dce0e6"/>
+      <text x="84" y="23" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#2b4c7e" text-anchor="middle">2</text>
+
+      <g transform="translate(10, 36)">
+        <rect width="176" height="44" rx="8" fill="#ffffff" stroke="#e8eaee" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="38" rx="1.5" fill="#f5cf5c"/>
+        <text x="15" y="18" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Ajustar drag &amp; drop</text>
+        <rect x="15" y="26" width="32" height="14" rx="7" fill="#dce0e6" opacity="0.7"/>
+        <text x="31" y="37" font-family="system-ui, sans-serif" font-size="8" fill="#606d80" text-anchor="middle">nota</text>
+      </g>
+      <g transform="translate(10, 86)">
+        <rect width="176" height="32" rx="8" fill="#ffffff" stroke="#e8eaee" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="26" rx="1.5" fill="#fdba74"/>
+        <text x="15" y="21" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Refatorar autenticação</text>
+      </g>
+    </g>
+
+    <!-- ── COLUMN 3: Feito ── -->
+    <g transform="translate(440, 80)">
+      <rect x="3" y="3" width="196" height="244" rx="12" fill="#1f1f20" opacity="0.06"/>
+      <rect width="196" height="244" rx="12" fill="#ffffff" opacity="0.94"/>
+
+      <text x="14" y="24" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#1f1f20">Feito</text>
+      <rect x="44" y="11" width="28" height="16" rx="8" fill="#dce0e6"/>
+      <text x="58" y="23" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#2b4c7e" text-anchor="middle">3</text>
+
+      <g transform="translate(10, 36)">
+        <rect width="176" height="44" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="38" rx="1.5" fill="#86efac"/>
+        <text x="15" y="18" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Setup Vite + TypeScript</text>
+        <rect x="15" y="26" width="58" height="14" rx="7" fill="#86efac" opacity="0.3"/>
+        <text x="44" y="37" font-family="system-ui, sans-serif" font-size="8" font-weight="700" fill="#16a34a" text-anchor="middle">resolvido</text>
+      </g>
+      <g transform="translate(10, 86)">
+        <rect width="176" height="32" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="26" rx="1.5" fill="#86efac"/>
+        <text x="15" y="21" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Paleta e tipografia</text>
+      </g>
+      <g transform="translate(10, 124)">
+        <rect width="176" height="32" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+        <rect x="3" y="3" width="3" height="26" rx="1.5" fill="#86efac"/>
+        <text x="15" y="21" font-family="system-ui, sans-serif" font-size="10" fill="#1f1f20">Login + sync Supabase</text>
+      </g>
+    </g>
+
   </g>
 </svg>

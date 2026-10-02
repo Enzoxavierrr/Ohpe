@@ -22,7 +22,7 @@ import { downloadJson } from '../utils/downloadJson';
 import type { Board, CardData, ColumnStatus } from '../types/board';
 import '../styles/board.css';
 
-const STATUS_CYCLE: (ColumnStatus | undefined)[] = [undefined, 'todo', 'doing', 'done'];
+const STATUS_CYCLE: (ColumnStatus | undefined)[] = [undefined, 'todo', 'doing', 'blocked', 'done'];
 
 function nextStatus(curr: ColumnStatus | undefined): ColumnStatus | undefined {
   const i = STATUS_CYCLE.indexOf(curr);

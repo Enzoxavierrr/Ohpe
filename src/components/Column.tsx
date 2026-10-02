@@ -22,6 +22,7 @@ const STATUS_LABEL: Record<ColumnStatus | 'none', string> = {
   none: 'sem status',
   todo: 'a fazer',
   doing: 'sendo feito',
+  blocked: 'impedimento',
   done: 'feito',
 };
 

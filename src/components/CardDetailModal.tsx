@@ -13,16 +13,18 @@ type Props = {
     title: string;
     description?: string;
     resolution?: string;
+    impediment?: string;
     status?: ColumnStatus;
   }) => void;
   onArchive: () => void;
 };
 
 const STATUS_OPTIONS: { value: CardStatus; label: string }[] = [
-  { value: 'none',  label: 'Sem status' },
-  { value: 'todo',  label: 'A fazer' },
-  { value: 'doing', label: 'Sendo feito' },
-  { value: 'done',  label: 'Feito' },
+  { value: 'none',    label: 'Sem status' },
+  { value: 'todo',    label: 'A fazer' },
+  { value: 'doing',   label: 'Sendo feito' },
+  { value: 'blocked', label: 'Impedimento' },
+  { value: 'done',    label: 'Feito' },
 ];
 
 function labelOf(status: CardStatus) {
@@ -60,24 +62,19 @@ function buildClaudePrompt(input: {
   ].join('\n');
 }
 
+type NoteVariant = 'default' | 'resolution' | 'blocked';
+
 type EditableNoteProps = {
   value: string;
   onChange: (next: string) => void;
   placeholder: string;
   rows: number;
-  resolution?: boolean;
+  variant?: NoteVariant;
 };
 
-function EditableNote({ value, onChange, placeholder, rows, resolution }: EditableNoteProps) {
-  const hasContent = value.trim().length > 0;
-  const [editing, setEditing] = useState(!hasContent);
+function EditableNote({ value, onChange, placeholder, rows, variant = 'default' }: EditableNoteProps) {
+  const [editing, setEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Sincroniza quando o card muda externamente (ex: abre outro card)
-  useEffect(() => {
-    setEditing(value.trim().length === 0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (!editing) return;
@@ -88,7 +85,7 @@ function EditableNote({ value, onChange, placeholder, rows, resolution }: Editab
   }, [editing]);
 
   function handleBlur() {
-    if (value.trim().length > 0) setEditing(false);
+    setEditing(false);
   }
 
   function handleKeyDown(e: ReactKeyboardEvent<HTMLTextAreaElement>) {
@@ -102,18 +99,17 @@ function EditableNote({ value, onChange, placeholder, rows, resolution }: Editab
     setEditing(true);
   }
 
-  function noteKeyboard(e: ReactKeyboardEvent<HTMLDivElement>) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      enterEdit();
-    }
-  }
+  const hasContent = value.trim().length > 0;
+
+  const variantClass =
+    variant === 'resolution' ? '--resolution' :
+    variant === 'blocked'    ? '--blocked'    : '';
 
   if (editing) {
     return (
       <textarea
         ref={textareaRef}
-        className={`card-detail__field ${resolution ? 'card-detail__field--resolution' : ''}`}
+        className={`card-detail__field ${variantClass ? 'card-detail__field' + variantClass : ''}`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={handleBlur}
@@ -126,20 +122,21 @@ function EditableNote({ value, onChange, placeholder, rows, resolution }: Editab
 
   return (
     <div
-      className={`card-detail__note ${resolution ? 'card-detail__note--resolution' : ''}`}
-      onClick={enterEdit}
-      onKeyDown={noteKeyboard}
-      role="button"
-      tabIndex={0}
-      title="Clique para editar"
+      className={[
+        'card-detail__note',
+        variantClass ? 'card-detail__note' + variantClass : '',
+        hasContent ? '' : 'card-detail__note--empty',
+      ].filter(Boolean).join(' ')}
     >
-      <div className="card-detail__note-text">{value}</div>
+      <div className="card-detail__note-text">
+        {hasContent ? value : placeholder}
+      </div>
       <button
         type="button"
         className="card-detail__note-edit"
-        onClick={(e) => { e.stopPropagation(); enterEdit(); }}
-        aria-label="Editar"
-        title="Editar"
+        onClick={enterEdit}
+        aria-label={hasContent ? 'Editar' : 'Adicionar'}
+        title={hasContent ? 'Editar' : 'Adicionar'}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 20h9" />
@@ -156,6 +153,7 @@ export function CardDetailModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [resolution, setResolution] = useState('');
+  const [impediment, setImpediment] = useState('');
   const [status, setStatus] = useState<CardStatus>('none');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -167,6 +165,7 @@ export function CardDetailModal({
     setTitle(card.title);
     setDescription(card.description ?? '');
     setResolution(card.resolution ?? '');
+    setImpediment(card.impediment ?? '');
     setStatus((card.status as CardStatus) ?? 'none');
     setPickerOpen(false);
   }, [open, card]);
@@ -201,6 +200,7 @@ export function CardDetailModal({
       title: nextTitle,
       description: description.trim() ? description : undefined,
       resolution: resolution.trim() ? resolution : undefined,
+      impediment: impediment.trim() ? impediment : undefined,
       status: status === 'none' ? undefined : status,
     });
     onClose();
@@ -325,42 +325,57 @@ export function CardDetailModal({
           )}
         </div>
 
-        <label className="card-detail__label card-detail__label--with-action">
-          Descrição
-          <button
-            type="button"
-            className={`card-detail__copy-icon ${copied ? 'is-copied' : ''}`}
-            onClick={copyPromptForClaude}
-            aria-label="Copiar Template"
-            title="Copiar Template"
-          >
-            {copied ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-            )}
-          </button>
-        </label>
-        <EditableNote
-          value={description}
-          onChange={setDescription}
-          placeholder="Contexto, requisitos, links…"
-          rows={4}
-        />
+        {status === 'blocked' ? (
+          <>
+            <label className="card-detail__label">O que está impedindo</label>
+            <EditableNote
+              value={impediment}
+              onChange={setImpediment}
+              placeholder="Descreva o impedimento — o que travou, quem/o que você está esperando, qual decisão falta. Serve pra não esquecer quando voltar."
+              rows={6}
+              variant="blocked"
+            />
+          </>
+        ) : (
+          <>
+            <label className="card-detail__label card-detail__label--with-action">
+              Descrição
+              <button
+                type="button"
+                className={`card-detail__copy-icon ${copied ? 'is-copied' : ''}`}
+                onClick={copyPromptForClaude}
+                aria-label="Copiar Template"
+                title="Copiar Template"
+              >
+                {copied ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                )}
+              </button>
+            </label>
+            <EditableNote
+              value={description}
+              onChange={setDescription}
+              placeholder="Contexto, requisitos, links…"
+              rows={4}
+            />
 
-        <label className="card-detail__label">Como resolvi</label>
-        <EditableNote
-          value={resolution}
-          onChange={setResolution}
-          placeholder="Anote aqui o caminho, decisões, código, links do que foi feito. Serve de memória pra depois."
-          rows={6}
-          resolution
-        />
+            <label className="card-detail__label">Como resolvi</label>
+            <EditableNote
+              value={resolution}
+              onChange={setResolution}
+              placeholder="Anote aqui o caminho, decisões, código, links do que foi feito. Serve de memória pra depois."
+              rows={6}
+              variant="resolution"
+            />
+          </>
+        )}
 
         <div className="modal__actions card-detail__actions">
           <button

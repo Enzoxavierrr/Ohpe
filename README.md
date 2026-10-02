@@ -1,145 +1,366 @@
 <div align="center">
 
-<img src="docs/hero.svg" alt="Ohpe — Kanban minimalista em React + TypeScript" width="100%" />
+<br />
+
+<img src="docs/hero.svg" alt="Ohpe — Kanban minimalista com sync na nuvem" width="100%" />
+
+<br />
+<br />
+
+<table><tr><td>
+<h1>
+  <img src="public/brand-mark.svg" alt="" width="28" height="28" align="center" />
+  &thinsp;Ohpe
+</h1>
+</td></tr></table>
+
+<p><strong>Kanban minimalista com sync na nuvem.</strong><br/>
+Multi-board · Status tags · Drag & drop · Login por username · Temas</p>
 
 <br />
 
-<h1>
-  <img src="public/brand-mark.svg" alt="" width="22" height="22" align="center" />
-  Ohpe
-</h1>
-
 <p>
-  <a href="https://github.com/DenverCoder1/readme-typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=IBM+Plex+Sans&weight=500&size=18&pause=1200&color=2B4C7E&center=true&vCenter=true&width=520&lines=Kanban+leve%2C+bonito+e+100%25+no+navegador;Arraste%2C+edite%2C+exporte.+Sem+backend.;React+%2B+TypeScript+%2B+Vite" alt="tagline animada" />
-  </a>
+  <img alt="React 18" src="https://img.shields.io/badge/React-18-2B4C7E?style=for-the-badge&logo=react&logoColor=fff" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-2B4C7E?style=for-the-badge&logo=typescript&logoColor=fff" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-5-567EBB?style=for-the-badge&logo=vite&logoColor=fff" />
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Auth+DB-567EBB?style=for-the-badge&logo=supabase&logoColor=fff" />
+  <img alt="dnd-kit" src="https://img.shields.io/badge/dnd--kit-6-606D80?style=for-the-badge" />
 </p>
 
 <p>
-  <img alt="React" src="https://img.shields.io/badge/React-18-2B4C7E?style=flat-square&logo=react&logoColor=fff" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-2B4C7E?style=flat-square&logo=typescript&logoColor=fff" />
-  <img alt="Vite" src="https://img.shields.io/badge/Vite-5-567EBB?style=flat-square&logo=vite&logoColor=fff" />
-  <img alt="@dnd-kit" src="https://img.shields.io/badge/dnd--kit-6-567EBB?style=flat-square" />
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-606D80?style=flat-square" />
+  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-606D80?style=flat-square" />
+  <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2B4C7E?style=flat-square" />
 </p>
 
 </div>
 
+<br />
+
 ---
+
+<br />
 
 ## Por que existe
 
-Um kanban de bolso, feito pra abrir num aba e usar. **Sem login, sem servidor, sem tracker.** Tudo vive no `localStorage` do navegador — o único jeito de tirar os dados de lá é você mesmo baixando o JSON pelo botão de download.
+Um kanban que abre numa aba e funciona. Sem overhead, sem onboarding de 15 passos.
+Login por **username + senha** — sem email, sem OAuth, sem fricção.
+Boards sincronizados via **Supabase** — use em casa, no trabalho, no celular. É o mesmo board.
 
-## O que tem
+<br />
 
-|  | |
+## Features
+
+<table>
+<tr>
+<td width="50%">
+
+### Workspace multi-board
+
+Home com grid visual de boards. Crie quantos precisar, renomeie, delete, navegue entre eles com transições animadas.
+
+</td>
+<td width="50%">
+
+### Drag & drop real
+
+Cards arrastáveis entre colunas. Colunas reordenáveis por drag handle. Redimensionamento por borda direita. Tudo com `@dnd-kit`.
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Status tags por card
+
+Cada card tem seu próprio status — independente da coluna:
+
+![a fazer](https://img.shields.io/badge/●_a_fazer-567ebb?style=flat-square&labelColor=567ebb)
+![fazendo](https://img.shields.io/badge/●_fazendo-f5cf5c?style=flat-square&labelColor=f5cf5c)
+![bloqueado](https://img.shields.io/badge/●_bloqueado-fca5a5?style=flat-square&labelColor=fca5a5)
+![melhorias](https://img.shields.io/badge/●_melhorias-fdba74?style=flat-square&labelColor=fdba74)
+![feito](https://img.shields.io/badge/●_feito-86efac?style=flat-square&labelColor=86efac)
+
+</td>
+<td>
+
+### Card detail modal
+
+Abre os detalhes do card com:
+- **Descrição** — o que precisa ser feito
+- **Como resolvi** — documentação da solução
+- **Impedimento** — quando bloqueado
+- **Melhorias** — lista item por item, copiável
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Arquivar, não deletar
+
+Cards são arquivados — não perdidos. Drawer lateral com lista de arquivados, restaure com um clique.
+
+</td>
+<td>
+
+### Editor in-place
+
+Notas aparecem formatadas como leitura. Ícone de lápis ativa edição. Textareas auto-expandem — o modal rola, não o campo.
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Import / Export JSON
+
+Menu `⋮` no header → baixe o board inteiro como JSON ou importe de outro dispositivo. Migração automática de formatos antigos.
+
+</td>
+<td>
+
+### Copiar template
+
+Botão que gera template formatado do card (título + descrição + resolução) pronto pra colar no Claude, Notion ou docs.
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Sync automático
+
+Supabase como backend. JSONB blob com debounce de 800ms. Indicador visual de sync no header. Abra em outro browser — tá lá.
+
+</td>
+<td>
+
+### Temas claro / escuro
+
+Toggle no header. Paleta completa com tokens CSS semânticos. Transição suave entre temas.
+
+</td>
+</tr>
+</table>
+
+<br />
+
+<details>
+<summary><strong>Animações e transições</strong></summary>
+
+<br />
+
+| O quê | Como |
 |---|---|
-| **Colunas editáveis** | Clique no título pra renomear, remova quando quiser, arraste pra reordenar cards |
-| **Cards rápidos** | Um tile `+` no rodapé da coluna vira input; Enter cria, Esc cancela |
-| **Editar in place** | Passe o mouse no card e use o lápis pra ajustar o título |
-| **Drag & drop real** | `@dnd-kit` com sortable — arraste entre e dentro de colunas |
-| **Persistência local** | `localStorage`, salva a cada mudança |
-| **Exportar JSON** | Ícone no header baixa `ohpe-board-YYYY-MM-DD.json` |
-| **Design coerente** | Paleta azul + IBM Plex Sans / Sora, dark navy em acento |
+| **Splash screen** | Arco SVG draw-on + 3 partículas orbitando + per-letter stagger do "Ohpe" |
+| **Login page** | Grid de dots com drift, glow pulsante, scan line horizontal, entrada staggered por campo |
+| **Home → Board** | Slide + blur + fade com direção (forward/backward), 420ms spring |
+| **Cards** | `justLanded` green pulse na criação, hover lift com shadow transition |
+| **Colunas** | Status dropdown com scale spring, resize handle com cursor feedback |
+| **Modais** | Backdrop fade + content scale-in, close com animação reversa |
 
-## Stack
+</details>
 
-<p>
-  <img src="https://skillicons.dev/icons?i=react,ts,vite,css,html&perline=5" alt="stack" />
-</p>
+<br />
 
-- **React 18** + **TypeScript 5** — UI declarativa e tipada
-- **Vite 5** — dev server rápido e build estático
-- **@dnd-kit** (`core` + `sortable`) — drag & drop acessível
-- **CSS puro** com tokens semânticos (`--brand-primary`, `--text-primary`, …) — sem framework de estilo
+---
 
-## Como rodar
+<br />
+
+## Quick start
 
 ```bash
 git clone <este-repo>
 cd Ohpe
 npm install
-cp .env.local.example .env.local   # preencher URL + chave do Supabase (ver abaixo)
-npm run dev                        # http://localhost:5173
+cp .env.local.example .env.local
+npm run dev
 ```
 
-### Variáveis de ambiente
+<details>
+<summary><strong>Setup do Supabase</strong></summary>
 
-O login e a sincronização usam Supabase. Crie um arquivo `.env.local` na raiz:
+<br />
 
+**1.** Crie um projeto em [supabase.com](https://supabase.com)
+
+**2.** Aplique a migration:
+
+```sql
+create table public.boards (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.boards enable row level security;
+
+create policy "owner reads"   on public.boards for select using (auth.uid() = user_id);
+create policy "owner writes"  on public.boards for insert with check (auth.uid() = user_id);
+create policy "owner updates" on public.boards for update using (auth.uid() = user_id);
 ```
+
+**3.** Em **Auth → Providers → Email**, desabilite *Confirm email*
+
+**4.** Copie URL + publishable key pro `.env.local`:
+
+```env
 VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co
-VITE_SUPABASE_ANON_KEY=<sua-anon-ou-publishable-key>
+VITE_SUPABASE_ANON_KEY=<sua-publishable-key>
 ```
 
-Setup do projeto Supabase:
-1. Criar um projeto em [supabase.com](https://supabase.com).
-2. Aplicar a migration `boards` com RLS (ver `src/hooks/useBoard.ts` pro schema esperado — `user_id uuid pk`, `data jsonb`, `updated_at timestamptz`).
-3. Em **Auth → Providers → Email**, desabilitar *Confirm email* pra cadastro em 1 passo.
-4. Copiar URL + publishable key pra `.env.local`.
+> A publishable key é segura no client — RLS protege os dados. A service role key nunca é usada no front.
 
-Para produção:
+</details>
+
+<details>
+<summary><strong>Deploy em produção</strong></summary>
+
+<br />
 
 ```bash
-npm run build          # gera dist/
-npm run preview        # serve dist/ localmente
+npm run build     # gera dist/
+npm run preview   # serve localmente
 ```
 
-Defina as mesmas variáveis `VITE_SUPABASE_*` no painel do host (**Vercel, Netlify, Cloudflare Pages**).
+Defina `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no painel do host (Vercel, Netlify, Cloudflare Pages).
 
-## Estrutura
+</details>
+
+<br />
+
+---
+
+<br />
+
+## Arquitetura
 
 ```
 src/
-├── App.tsx
-├── main.tsx
-├── components/       # Card, Column, NewCardForm
-├── pages/            # BoardPage
-├── hooks/            # useBoard (localStorage)
-├── types/            # tipagem do board
-├── utils/            # downloadJson
-└── styles/           # globals.css, board.css
+├── App.tsx                     Router: splash → login → workspace
+├── components/
+│   ├── Card.tsx                Card com status, badges, archive
+│   ├── CardDetailModal.tsx     Modal: descrição, resolução, impedimento, melhorias
+│   ├── Column.tsx              Coluna sortable + resize + status dropdown
+│   ├── ArchiveDrawer.tsx       Drawer lateral de arquivados
+│   ├── ConfirmModal.tsx        Modal genérico de confirmação
+│   ├── NewCardForm.tsx         Input inline pra criar card
+│   └── SplashScreen.tsx        Animação SVG de entrada
+├── pages/
+│   ├── HomePage.tsx            Grid de boards, CRUD, transições
+│   ├── BoardPage.tsx           Kanban com header, menu, sync
+│   ├── LoginPage.tsx           Login/signup animado
+│   └── ConfigErrorPage.tsx     Fallback: env vars faltando
+├── hooks/
+│   ├── useBoard.ts             Workspace multi-board + sync Supabase
+│   ├── useAuth.ts              Auth (username → email sintético @ohpe.local)
+│   └── useTheme.ts             Toggle claro/escuro
+├── lib/
+│   └── supabase.ts             Client com fallback gracioso
+├── types/
+│   └── board.ts                Board, Card, Column, Workspace, Status
+└── styles/
+    ├── globals.css              Tokens, tema escuro, view transitions
+    ├── board.css                Board, cards, colunas, status
+    ├── home.css                 Home grid, background tech
+    ├── login.css                Login animado
+    ├── modal.css                Layout de modal
+    └── splash.css               Timeline da splash
 ```
+
+<br />
 
 ## Atalhos
 
-| Ação | Como |
+| Ação | |
 |---|---|
-| Criar card | Clique no `+` → digite → **Enter** |
-| Cancelar criação | **Esc** |
-| Editar card | Hover no card → ícone de **lápis** |
-| Renomear coluna | Clique no título da coluna |
-| Nova linha no card | **Shift + Enter** durante edição |
-| Remover coluna | `×` ao lado do título (confirma se tiver cards) |
-| Baixar board | Ícone de download no canto superior direito |
+| Criar card | `+` → digite → **Enter** |
+| Detalhes do card | Clique no card |
+| Editar nota | Ícone de lápis no modal |
+| Status do card | Dropdown no modal |
+| Arquivar | Ícone no card |
+| Renomear coluna | Clique no título |
+| Reordenar colunas | Drag pelo grip |
+| Redimensionar | Arrastar borda direita |
+| Voltar pra home | `←` no header |
+| Download/Import | Menu `⋮` |
+| Trocar tema | Sol/lua no header |
+
+<br />
 
 ## Paleta
 
-| Token semântico | Hex | Original | Uso |
-|---|---|---|---|
-| `--text-primary`    | `#1f1f20` | `color1` | Texto principal |
-| `--brand-primary`   | `#2b4c7e` | `color2` | Acento forte: marca, foco, hover ativo |
-| `--brand-secondary` | `#567ebb` | `color3` | Acento leve: borda de foco, gradiente |
-| `--text-muted`      | `#606d80` | `color4` | Texto e ícones secundários |
-| `--surface-muted`   | `#dce0e6` | `color5` | Fundo geral, chips |
+<table>
+<tr>
+<th>Token</th>
+<th>Light</th>
+<th>Dark</th>
+<th></th>
+</tr>
+<tr>
+<td><code>--brand-primary</code></td>
+<td><code>#2b4c7e</code></td>
+<td><code>#6f97d3</code></td>
+<td>Marca, foco, acento forte</td>
+</tr>
+<tr>
+<td><code>--brand-secondary</code></td>
+<td><code>#567ebb</code></td>
+<td><code>#94b3e5</code></td>
+<td>Bordas, gradientes</td>
+</tr>
+<tr>
+<td><code>--text-primary</code></td>
+<td><code>#1f1f20</code></td>
+<td><code>#eef1f7</code></td>
+<td>Texto principal</td>
+</tr>
+<tr>
+<td><code>--text-muted</code></td>
+<td><code>#606d80</code></td>
+<td><code>#8a97ae</code></td>
+<td>Texto secundário</td>
+</tr>
+<tr>
+<td><code>--surface-card</code></td>
+<td><code>#ffffff</code></td>
+<td><code>#1c2029</code></td>
+<td>Fundo de cards</td>
+</tr>
+</table>
+
+<br />
 
 ## Roadmap
 
-- [ ] Temas claro/escuro sincronizados com o SO
-- [ ] Import de JSON (o oposto do download)
-- [ ] Múltiplos boards com abas
+- [x] Temas claro/escuro
+- [x] Import/export JSON
+- [x] Múltiplos boards
+- [x] Login e sync na nuvem
+- [x] Status tags com cores
+- [x] Arquivar cards
 - [ ] Atalhos de teclado globais
 - [ ] Undo/redo
+- [ ] Supabase Realtime (sync sem refresh)
+- [ ] Compartilhar board entre contas
 
-## Licença
+<br />
 
-MIT © Enzo
+---
+
+<br />
 
 <div align="center">
-  <sub>
-    Feito com
-    <img src="public/brand-mark.svg" alt="" width="12" height="12" align="center" />
-    e um pouco de café.
-  </sub>
+
+<sub>MIT © Enzo</sub>
+
+<br />
+<br />
+
+<sub>
+  Feito com
+  <img src="public/brand-mark.svg" alt="" width="12" height="12" align="center" />
+  e um pouco de café.
+</sub>
+
 </div>

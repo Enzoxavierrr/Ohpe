@@ -1,95 +1,172 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="900" height="320">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#dce0e6"/>
-      <stop offset="1" stop-color="#f4f6fa"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#eef1f7"/>
+      <stop offset="1" stop-color="#dce0e6"/>
     </linearGradient>
     <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#2b4c7e"/>
       <stop offset="1" stop-color="#567ebb"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
-      <feOffset dx="0" dy="4" result="offsetblur"/>
-      <feComponentTransfer><feFuncA type="linear" slope="0.16"/></feComponentTransfer>
+    <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#567ebb" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#567ebb" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="s" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dy="4"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="ss" x="-5%" y="-5%" width="110%" height="115%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dy="2"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.08"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="screen"><rect x="260" y="28" width="660" height="344" rx="12"/></clipPath>
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="0.8" fill="#567ebb" opacity="0.18"/>
+    </pattern>
     <style>
-      .t   { font-family: 'IBM Plex Sans', system-ui, sans-serif; fill: #1f1f20; }
-      .tt  { font-family: 'Sora', 'IBM Plex Sans', sans-serif; font-weight: 300; }
-      .ct  { font-size: 13px; }
-      .ch  { font-size: 14px; }
-      .cnt { font-size: 11px; font-weight: 600; fill: #2b4c7e; }
+      .f  { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+      .fs { font-family: 'Sora', 'IBM Plex Sans', sans-serif; }
+      .c1 { fill: #1f1f20; }
+      .c2 { fill: #2b4c7e; }
+      .c3 { fill: #567ebb; }
+      .c4 { fill: #606d80; }
     </style>
   </defs>
 
-  <rect width="900" height="320" fill="url(#bg)"/>
+  <!-- Background -->
+  <rect width="960" height="400" fill="url(#bg)"/>
+  <rect width="960" height="400" fill="url(#dots)"/>
+  <ellipse cx="600" cy="200" rx="400" ry="250" fill="url(#glow)"/>
 
-  <!-- Brand -->
-  <g transform="translate(48, 40)">
-    <rect x="0" y="0" width="42" height="42" rx="11" fill="url(#mark)"/>
-    <text x="21" y="28" text-anchor="middle" font-size="18" fill="#fff" class="tt">◇</text>
-    <text x="58" y="28" class="t tt" font-size="26">Ohpe</text>
-    <text x="58" y="52" class="t" font-size="12" fill="#606d80">Kanban minimalista · React + TS</text>
-  </g>
-
-  <!-- Download icon -->
-  <g transform="translate(820, 44)" stroke="#2b4c7e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="16" cy="16" r="20" fill="#fff" stroke="rgba(31,31,32,0.08)" stroke-width="1"/>
-    <path d="M25 21v4a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-4"/>
-    <polyline points="11 14 16 19 21 14"/>
-    <line x1="16" y1="19" x2="16" y2="7"/>
-  </g>
-
-  <!-- Column: A fazer -->
-  <g transform="translate(48, 110)" filter="url(#shadow)">
-    <rect width="240" height="180" rx="18" fill="#ffffff" opacity="0.9" stroke="rgba(31,31,32,0.08)"/>
-    <text x="16" y="30" class="t tt ch">A fazer</text>
-    <rect x="82" y="16" width="34" height="18" rx="9" fill="#dce0e6"/>
-    <text x="99" y="29" text-anchor="middle" class="cnt">3</text>
-
-    <g transform="translate(16, 48)">
-      <rect width="208" height="34" rx="10" fill="#fff" stroke="rgba(31,31,32,0.08)"/>
-      <text x="14" y="22" class="t ct">Diagramar arquitetura</text>
+  <!-- Left side: branding -->
+  <g transform="translate(48, 100)">
+    <g transform="translate(0, 0)">
+      <rect width="56" height="56" rx="14" fill="url(#mark)"/>
+      <g transform="translate(28, 28)">
+        <path d="M 0 -16 A 16 16 0 1 0 16 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+      </g>
     </g>
-    <g transform="translate(16, 88)">
-      <rect width="208" height="34" rx="10" fill="#fff" stroke="#567ebb"/>
-      <text x="14" y="22" class="t ct">Escrever documentação</text>
-    </g>
-    <g transform="translate(16, 128)">
-      <rect width="208" height="34" rx="10" fill="#fff" stroke="rgba(31,31,32,0.08)"/>
-      <text x="14" y="22" class="t ct">Publicar release v0.1</text>
+    <text x="0" y="100" class="f fs c1" font-size="42" font-weight="300" letter-spacing="-1">Ohpe</text>
+    <text x="0" y="130" class="f c4" font-size="14">Kanban minimalista</text>
+    <text x="0" y="150" class="f c4" font-size="14">com sync na nuvem</text>
+
+    <g transform="translate(0, 180)">
+      <rect width="70" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
+      <text x="35" y="15" text-anchor="middle" class="f c2" font-size="10" font-weight="600">React 18</text>
+      <rect x="78" width="52" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
+      <text x="104" y="15" text-anchor="middle" class="f c2" font-size="10" font-weight="600">Vite 5</text>
+      <rect x="0" y="28" width="76" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
+      <text x="38" y="43" text-anchor="middle" class="f c2" font-size="10" font-weight="600">Supabase</text>
+      <rect x="84" y="28" width="68" height="22" rx="11" fill="#2b4c7e" opacity="0.1"/>
+      <text x="118" y="43" text-anchor="middle" class="f c2" font-size="10" font-weight="600">dnd-kit</text>
     </g>
   </g>
 
-  <!-- Column: Em progresso -->
-  <g transform="translate(308, 110)" filter="url(#shadow)">
-    <rect width="240" height="180" rx="18" fill="#ffffff" opacity="0.9" stroke="rgba(31,31,32,0.08)"/>
-    <text x="16" y="30" class="t tt ch">Em progresso</text>
-    <rect x="122" y="16" width="34" height="18" rx="9" fill="#dce0e6"/>
-    <text x="139" y="29" text-anchor="middle" class="cnt">1</text>
+  <!-- Right side: app mockup (browser frame) -->
+  <g transform="translate(260, 28)" filter="url(#s)">
+    <!-- Browser chrome -->
+    <rect width="660" height="344" rx="12" fill="#fff"/>
+    <rect width="660" height="32" rx="12" fill="#f4f6fa"/>
+    <rect y="24" width="660" height="8" fill="#f4f6fa"/>
+    <circle cx="18" cy="16" r="5" fill="#ff5f56" opacity="0.7"/>
+    <circle cx="36" cy="16" r="5" fill="#ffbd2e" opacity="0.7"/>
+    <circle cx="54" cy="16" r="5" fill="#27c93f" opacity="0.7"/>
+    <rect x="200" y="8" width="260" height="16" rx="8" fill="#e8eaee"/>
+    <text x="330" y="20" text-anchor="middle" class="f c4" font-size="9">ohpe.vercel.app</text>
+    <line x1="0" y1="32" x2="660" y2="32" stroke="#e8eaee"/>
 
-    <g transform="translate(16, 48)">
-      <rect width="208" height="52" rx="10" fill="#fff" stroke="rgba(31,31,32,0.08)"/>
-      <text x="14" y="22" class="t ct">Ajustar drag &amp; drop</text>
-      <text x="14" y="40" class="t ct" fill="#606d80" font-size="11">com @dnd-kit e sortable</text>
-    </g>
-  </g>
+    <!-- App content area -->
+    <g transform="translate(0, 32)">
+      <rect width="660" height="312" fill="#dce0e6"/>
 
-  <!-- Column: Feito -->
-  <g transform="translate(568, 110)" filter="url(#shadow)">
-    <rect width="240" height="180" rx="18" fill="#ffffff" opacity="0.9" stroke="rgba(31,31,32,0.08)"/>
-    <text x="16" y="30" class="t tt ch">Feito</text>
-    <rect x="52" y="16" width="34" height="18" rx="9" fill="#dce0e6"/>
-    <text x="69" y="29" text-anchor="middle" class="cnt">2</text>
+      <!-- Header -->
+      <rect width="660" height="36" fill="#fff" opacity="0.85"/>
+      <g transform="translate(14, 10)">
+        <path d="M 0 -6 A 6 6 0 1 0 6 0" fill="none" stroke="#2b4c7e" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <text x="30" y="22" class="f fs c1" font-size="12" font-weight="300">Ohpe</text>
+      <text x="62" y="22" class="f c4" font-size="12" font-weight="300">/</text>
+      <text x="72" y="22" class="f c4" font-size="11">Meu Projeto</text>
 
-    <g transform="translate(16, 48)">
-      <rect width="208" height="34" rx="10" fill="#fff" stroke="rgba(31,31,32,0.08)"/>
-      <text x="14" y="22" class="t ct">Setup Vite + TS</text>
-    </g>
-    <g transform="translate(16, 88)">
-      <rect width="208" height="34" rx="10" fill="#fff" stroke="rgba(31,31,32,0.08)"/>
-      <text x="14" y="22" class="t ct">Paleta e tipografia</text>
+      <!-- Columns -->
+      <!-- Col 1: A fazer -->
+      <g transform="translate(16, 48)" filter="url(#ss)">
+        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
+        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">A fazer</text>
+        <rect x="62" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
+        <text x="75" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">3</text>
+
+        <!-- Cards -->
+        <g transform="translate(10, 34)">
+          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#567ebb"/>
+          <text x="14" y="19" class="f c1" font-size="10">Definir endpoints da API</text>
+        </g>
+        <g transform="translate(10, 70)">
+          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#567ebb"/>
+          <text x="14" y="19" class="f c1" font-size="10">Escrever documentação</text>
+        </g>
+        <g transform="translate(10, 106)">
+          <rect width="176" height="42" rx="8" fill="#fff" stroke="#fca5a5" stroke-opacity="0.5"/>
+          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#fca5a5"/>
+          <text x="14" y="17" class="f c1" font-size="10">Deploy no staging</text>
+          <rect x="14" y="24" width="56" height="14" rx="7" fill="#fca5a5" opacity="0.2"/>
+          <text x="42" y="34" text-anchor="middle" class="f" font-size="8" font-weight="600" fill="#b91c1c">bloqueado</text>
+        </g>
+      </g>
+
+      <!-- Col 2: Fazendo -->
+      <g transform="translate(224, 48)" filter="url(#ss)">
+        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
+        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">Fazendo</text>
+        <rect x="66" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
+        <text x="79" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">2</text>
+
+        <g transform="translate(10, 34)">
+          <rect width="176" height="42" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#f5cf5c"/>
+          <text x="14" y="17" class="f c1" font-size="10">Ajustar drag &amp; drop</text>
+          <rect x="14" y="24" width="30" height="14" rx="7" fill="#dce0e6" opacity="0.6"/>
+          <text x="29" y="34" text-anchor="middle" class="f c4" font-size="8">nota</text>
+        </g>
+        <g transform="translate(10, 82)">
+          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#fdba74"/>
+          <text x="14" y="19" class="f c1" font-size="10">Refatorar autenticação</text>
+        </g>
+      </g>
+
+      <!-- Col 3: Feito -->
+      <g transform="translate(432, 48)" filter="url(#ss)">
+        <rect width="196" height="240" rx="12" fill="#fff" opacity="0.92"/>
+        <text x="12" y="22" class="f fs c1" font-size="11" font-weight="400">Feito</text>
+        <rect x="44" y="10" width="26" height="14" rx="7" fill="#dce0e6"/>
+        <text x="57" y="21" text-anchor="middle" class="f c2" font-size="9" font-weight="600">3</text>
+
+        <g transform="translate(10, 34)">
+          <rect width="176" height="42" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="36" rx="1.2" fill="#86efac"/>
+          <text x="14" y="17" class="f c1" font-size="10">Setup Vite + TypeScript</text>
+          <rect x="14" y="24" width="54" height="14" rx="7" fill="#86efac" opacity="0.25"/>
+          <text x="41" y="34" text-anchor="middle" class="f" font-size="8" font-weight="600" fill="#16a34a">resolvido</text>
+        </g>
+        <g transform="translate(10, 82)">
+          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#86efac"/>
+          <text x="14" y="19" class="f c1" font-size="10">Paleta e tipografia</text>
+        </g>
+        <g transform="translate(10, 118)">
+          <rect width="176" height="30" rx="8" fill="#fff" stroke="rgba(31,31,32,0.06)"/>
+          <rect x="3" y="3" width="2.5" height="24" rx="1.2" fill="#86efac"/>
+          <text x="14" y="19" class="f c1" font-size="10">Login + sync Supabase</text>
+        </g>
+      </g>
     </g>
   </g>
 </svg>

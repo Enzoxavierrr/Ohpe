@@ -23,6 +23,7 @@ export function HomePage({
   const [newBoardOpen, setNewBoardOpen] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const newBoardRef = useRef<HTMLInputElement>(null);
+  const hasOpenedNewBoard = useRef(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
   const renameRef = useRef<HTMLInputElement>(null);
@@ -30,7 +31,10 @@ export function HomePage({
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   useEffect(() => {
-    if (newBoardOpen) newBoardRef.current?.focus();
+    if (newBoardOpen) {
+      newBoardRef.current?.focus();
+      hasOpenedNewBoard.current = true;
+    }
   }, [newBoardOpen]);
 
   useEffect(() => {
@@ -230,16 +234,23 @@ export function HomePage({
             );
           })}
 
-          {newBoardOpen ? (
-            <form
-              className="board-card board-card--new is-editing"
-              onSubmit={submitNewBoard}
-            >
+          <div
+            className={`board-card board-card--new${newBoardOpen ? ' is-editing' : ''}${!hasOpenedNewBoard.current && !newBoardOpen ? ' home-anim' : ''}`}
+            style={!hasOpenedNewBoard.current && !newBoardOpen ? { animationDelay: `${1200 + orderedBoards.length * 70}ms` } : undefined}
+            onClick={() => { if (!newBoardOpen) setNewBoardOpen(true); }}
+          >
+            <div className="new-board__idle" aria-hidden={newBoardOpen}>
+              <span className="board-card__plus">+</span>
+              <span className="board-card__name">Novo board</span>
+              <span className="board-card__meta">Pra separar projetos, contextos, times</span>
+            </div>
+            <form className="new-board__form" aria-hidden={!newBoardOpen} onSubmit={submitNewBoard}>
               <input
                 ref={newBoardRef}
                 className="board-card__rename board-card__rename--new"
                 value={newBoardName}
                 onChange={(e) => setNewBoardName(e.target.value)}
+                tabIndex={newBoardOpen ? 0 : -1}
                 onBlur={() => {
                   if (!newBoardName.trim()) setNewBoardOpen(false);
                 }}
@@ -253,18 +264,7 @@ export function HomePage({
                 Enter para criar, Esc para cancelar
               </span>
             </form>
-          ) : (
-            <button
-              type="button"
-              className="board-card board-card--new home-anim"
-              style={{ animationDelay: `${1200 + orderedBoards.length * 70}ms` }}
-              onClick={() => setNewBoardOpen(true)}
-            >
-              <span className="board-card__plus" aria-hidden="true">+</span>
-              <span className="board-card__name">Novo board</span>
-              <span className="board-card__meta">Pra separar projetos, contextos, times</span>
-            </button>
-          )}
+          </div>
         </div>
       </main>
 

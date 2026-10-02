@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Board, ColumnStatus } from '../types/board';
+import type { Board, BoardMeta, ColumnStatus, Workspace } from '../types/board';
 
 export const BOARD_STORAGE_KEY = 'ohpe.board.v1';
 const SAVE_DEBOUNCE_MS = 800;
@@ -15,7 +15,7 @@ function guessStatus(title: string): ColumnStatus | undefined {
   return undefined;
 }
 
-function makeDefaultBoard(): Board {
+function makeEmptyBoard(): Board {
   return {
     columns: [
       { id: crypto.randomUUID(), title: 'A fazer', cardIds: [], status: 'todo' },
@@ -27,17 +27,33 @@ function makeDefaultBoard(): Board {
   };
 }
 
+export function makeDefaultWorkspace(name = 'Meu primeiro board'): Workspace {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  return {
+    boards: { [id]: makeEmptyBoard() },
+    meta: { [id]: { id, name, createdAt: now, updatedAt: now } },
+    order: [id],
+  };
+}
+
 export function isBoardShape(data: unknown): data is Partial<Board> {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
   return Array.isArray(d.columns) || (typeof d.cards === 'object' && d.cards !== null);
 }
 
-export function migrateBoard(parsed: any): Board {
-  return migrate(parsed);
+export function isWorkspaceShape(data: unknown): data is Partial<Workspace> {
+  if (!data || typeof data !== 'object') return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.boards === 'object' && d.boards !== null &&
+    typeof d.meta === 'object' && d.meta !== null &&
+    Array.isArray(d.order)
+  );
 }
 
-function migrate(parsed: any): Board {
+export function migrateBoard(parsed: any): Board {
   const columns = Array.isArray(parsed.columns) ? parsed.columns : [];
   const cards = parsed.cards && typeof parsed.cards === 'object' ? parsed.cards : {};
   const archive = Array.isArray(parsed.archive) ? parsed.archive : [];
@@ -54,40 +70,83 @@ function migrate(parsed: any): Board {
     archive,
   };
 
-  if (migrated.columns.length === 0) return makeDefaultBoard();
+  if (migrated.columns.length === 0) {
+    const empty = makeEmptyBoard();
+    migrated.columns = empty.columns;
+  }
   return migrated;
 }
 
-function loadLocal(): Board {
+function migrateWorkspace(parsed: any): Workspace {
+  if (isWorkspaceShape(parsed)) {
+    const boards: Record<string, Board> = {};
+    const metaIn = parsed.meta ?? {};
+    const now = new Date().toISOString();
+    const meta: Record<string, BoardMeta> = {};
+    const order: string[] = Array.isArray(parsed.order) ? parsed.order.map(String) : [];
+
+    for (const [id, b] of Object.entries(parsed.boards ?? {})) {
+      boards[id] = migrateBoard(b);
+      const m = (metaIn as any)[id];
+      meta[id] = {
+        id,
+        name: typeof m?.name === 'string' && m.name.trim() ? m.name : 'Board sem nome',
+        createdAt: typeof m?.createdAt === 'string' ? m.createdAt : now,
+        updatedAt: typeof m?.updatedAt === 'string' ? m.updatedAt : now,
+      };
+    }
+    // Garantir que todo board tem lugar no order
+    for (const id of Object.keys(boards)) {
+      if (!order.includes(id)) order.push(id);
+    }
+    // Remover ids órfãos do order
+    const filteredOrder = order.filter((id) => boards[id]);
+
+    if (filteredOrder.length === 0) return makeDefaultWorkspace();
+    return { boards, meta, order: filteredOrder };
+  }
+  if (isBoardShape(parsed)) {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    return {
+      boards: { [id]: migrateBoard(parsed) },
+      meta: { [id]: { id, name: 'Meu board', createdAt: now, updatedAt: now } },
+      order: [id],
+    };
+  }
+  return makeDefaultWorkspace();
+}
+
+function loadLocal(): Workspace {
   try {
     const raw = localStorage.getItem(BOARD_STORAGE_KEY);
-    if (!raw) return makeDefaultBoard();
-    const parsed = JSON.parse(raw);
-    if (!isBoardShape(parsed)) return makeDefaultBoard();
-    return migrate(parsed);
+    if (!raw) return makeDefaultWorkspace();
+    return migrateWorkspace(JSON.parse(raw));
   } catch {
-    return makeDefaultBoard();
+    return makeDefaultWorkspace();
   }
 }
 
-function isEmpty(b: Board) {
-  return Object.keys(b.cards).length === 0 && b.archive.length === 0;
+function workspaceIsEmpty(ws: Workspace): boolean {
+  for (const id of ws.order) {
+    const b = ws.boards[id];
+    if (b && (Object.keys(b.cards).length > 0 || b.archive.length > 0)) return false;
+  }
+  return ws.order.length === 0;
 }
 
-export function useBoard(userId: string | null | undefined) {
-  const [board, setBoard] = useState<Board>(loadLocal);
+export function useWorkspace(userId: string | null | undefined) {
+  const [workspace, setWorkspace] = useState<Workspace>(loadLocal);
   const [syncing, setSyncing] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const saveTimer = useRef<number | null>(null);
   const lastUserId = useRef<string | null | undefined>(undefined);
 
-  // Hydrate: when userId changes, pull from server (or stay local)
   useEffect(() => {
     if (lastUserId.current === userId) return;
     lastUserId.current = userId;
 
     if (!userId) {
-      // modo local-only: usa o que já está em memória (loadLocal no initial state)
       setHydrated(true);
       return;
     }
@@ -106,29 +165,27 @@ export function useBoard(userId: string | null | undefined) {
         if (cancelled) return;
         if (error) throw error;
 
-        if (data && isBoardShape(data.data)) {
-          const next = migrate(data.data);
-          setBoard(next);
+        if (data && (isWorkspaceShape(data.data) || isBoardShape(data.data))) {
+          const next = migrateWorkspace(data.data);
+          setWorkspace(next);
           try { localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(next)); } catch {}
         } else {
-          // server vazio → sobe o board local (migração one-time) se tiver algo
           const local = loadLocal();
-          if (!isEmpty(local)) {
+          if (!workspaceIsEmpty(local)) {
             await supabase.from('boards').upsert({
               user_id: userId,
               data: local,
               updated_at: new Date().toISOString(),
             });
-            setBoard(local);
+            setWorkspace(local);
           } else {
-            // sem nada em lugar nenhum → começa com default
-            const def = makeDefaultBoard();
-            setBoard(def);
+            const def = makeDefaultWorkspace();
+            setWorkspace(def);
             try { localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(def)); } catch {}
           }
         }
       } catch (err) {
-        console.error('[useBoard] hydrate falhou, continuando com cache local', err);
+        console.error('[useWorkspace] hydrate falhou, usando cache local', err);
       } finally {
         if (!cancelled) {
           setHydrated(true);
@@ -140,12 +197,11 @@ export function useBoard(userId: string | null | undefined) {
     return () => { cancelled = true; };
   }, [userId]);
 
-  // Persist: localStorage sempre; server com debounce
   useEffect(() => {
     if (!hydrated) return;
 
     try {
-      localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(board));
+      localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(workspace));
     } catch {}
 
     if (!userId) return;
@@ -156,17 +212,80 @@ export function useBoard(userId: string | null | undefined) {
         setSyncing(true);
         const { error } = await supabase.from('boards').upsert({
           user_id: userId,
-          data: board,
+          data: workspace,
           updated_at: new Date().toISOString(),
         });
         if (error) throw error;
       } catch (err) {
-        console.error('[useBoard] save falhou', err);
+        console.error('[useWorkspace] save falhou', err);
       } finally {
         setSyncing(false);
       }
     }, SAVE_DEBOUNCE_MS);
-  }, [board, userId, hydrated]);
+  }, [workspace, userId, hydrated]);
 
-  return { board, setBoard, syncing };
+  // --- helpers ---
+
+  const createBoard = useCallback((name: string) => {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const trimmed = name.trim() || 'Board sem nome';
+    setWorkspace((ws) => ({
+      ...ws,
+      boards: { ...ws.boards, [id]: makeEmptyBoard() },
+      meta: { ...ws.meta, [id]: { id, name: trimmed, createdAt: now, updatedAt: now } },
+      order: [...ws.order, id],
+    }));
+    return id;
+  }, []);
+
+  const renameBoard = useCallback((id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setWorkspace((ws) => {
+      if (!ws.meta[id]) return ws;
+      return {
+        ...ws,
+        meta: { ...ws.meta, [id]: { ...ws.meta[id], name: trimmed, updatedAt: new Date().toISOString() } },
+      };
+    });
+  }, []);
+
+  const deleteBoard = useCallback((id: string) => {
+    setWorkspace((ws) => {
+      if (!ws.boards[id]) return ws;
+      const { [id]: _removedBoard, ...boards } = ws.boards;
+      const { [id]: _removedMeta, ...meta } = ws.meta;
+      const order = ws.order.filter((x) => x !== id);
+      return { boards, meta, order };
+    });
+  }, []);
+
+  const updateBoard = useCallback((id: string, updater: (prev: Board) => Board) => {
+    setWorkspace((ws) => {
+      const current = ws.boards[id];
+      if (!current) return ws;
+      const next = updater(current);
+      return {
+        ...ws,
+        boards: { ...ws.boards, [id]: next },
+        meta: { ...ws.meta, [id]: { ...ws.meta[id], updatedAt: new Date().toISOString() } },
+      };
+    });
+  }, []);
+
+  const replaceWorkspace = useCallback((next: Workspace) => {
+    setWorkspace(migrateWorkspace(next));
+  }, []);
+
+  return {
+    workspace,
+    setWorkspace,
+    syncing,
+    createBoard,
+    renameBoard,
+    deleteBoard,
+    updateBoard,
+    replaceWorkspace,
+  };
 }

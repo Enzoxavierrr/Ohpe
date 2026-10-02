@@ -15,16 +15,23 @@ import { Column } from '../components/Column';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { CardDetailModal } from '../components/CardDetailModal';
 import { ArchiveDrawer } from '../components/ArchiveDrawer';
-import { useBoard, BOARD_STORAGE_KEY, isBoardShape, migrateBoard } from '../hooks/useBoard';
+import { BOARD_STORAGE_KEY, isBoardShape, migrateBoard } from '../hooks/useBoard';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth, userDisplayName } from '../hooks/useAuth';
 import { downloadJson } from '../utils/downloadJson';
 import type { Board, CardData, ColumnStatus } from '../types/board';
 import '../styles/board.css';
 
-export function BoardPage() {
+type BoardPageProps = {
+  board: Board;
+  setBoard: (updater: (prev: Board) => Board) => void;
+  syncing: boolean;
+  boardName: string;
+  onBack: () => void;
+};
+
+export function BoardPage({ board, setBoard, syncing, boardName, onBack }: BoardPageProps) {
   const { user, signOut } = useAuth();
-  const { board, setBoard, syncing } = useBoard(user?.id ?? null);
   const { theme, toggle: toggleTheme } = useTheme();
 
   async function doSignOut() {
@@ -68,7 +75,8 @@ export function BoardPage() {
 
   function confirmImport() {
     if (!pendingImport) return;
-    setBoard(pendingImport);
+    const next = pendingImport;
+    setBoard(() => next);
     setPendingImport(null);
   }
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -85,6 +93,54 @@ export function BoardPage() {
   const landedTimer = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const topScrollInnerRef = useRef<HTMLDivElement>(null);
+  const columnsRowRef = useRef<HTMLDivElement>(null);
+  const syncingScroll = useRef<'none' | 'top' | 'canvas'>('none');
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const top = topScrollRef.current;
+    const inner = topScrollInnerRef.current;
+    const row = columnsRowRef.current;
+    if (!canvas || !top || !inner || !row) return;
+
+    function updateWidth() {
+      if (!row || !inner || !canvas || !top) return;
+      const w = row.scrollWidth;
+      inner.style.width = `${w}px`;
+      setHasOverflow(w > canvas.clientWidth + 1);
+    }
+
+    function onCanvasScroll() {
+      if (syncingScroll.current === 'top') { syncingScroll.current = 'none'; return; }
+      syncingScroll.current = 'canvas';
+      top!.scrollLeft = canvas!.scrollLeft;
+    }
+    function onTopScroll() {
+      if (syncingScroll.current === 'canvas') { syncingScroll.current = 'none'; return; }
+      syncingScroll.current = 'top';
+      canvas!.scrollLeft = top!.scrollLeft;
+    }
+
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
+    ro.observe(row);
+    ro.observe(canvas);
+
+    canvas.addEventListener('scroll', onCanvasScroll, { passive: true });
+    top.addEventListener('scroll', onTopScroll, { passive: true });
+    window.addEventListener('resize', updateWidth);
+
+    return () => {
+      ro.disconnect();
+      canvas.removeEventListener('scroll', onCanvasScroll);
+      top.removeEventListener('scroll', onTopScroll);
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, [board.columns.length]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -386,13 +442,37 @@ export function BoardPage() {
   return (
     <div className="board-shell">
       <header className="board-header">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="32" strokeLinecap="round">
-              <path d="M 128 44 A 84 84 0 1 0 212 128" />
+        <div className="board-header__lead">
+          <button
+            type="button"
+            className="back-btn"
+            onClick={onBack}
+            title="Voltar pros meus boards"
+            aria-label="Voltar pros meus boards"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
             </svg>
-          </span>
-          <span className="brand-name">Ohpe</span>
+          </button>
+
+          <button
+            type="button"
+            className="brand brand--button"
+            onClick={onBack}
+            title="Voltar pros meus boards"
+            aria-label="Voltar pros meus boards"
+          >
+            <span className="brand-mark" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="32" strokeLinecap="round">
+                <path d="M 128 44 A 84 84 0 1 0 212 128" />
+              </svg>
+            </span>
+            <span className="brand-name">
+              <span className="brand-name__home">Ohpe</span>
+              <span className="brand-name__sep" aria-hidden="true">/</span>
+              <span className="brand-name__board">{boardName}</span>
+            </span>
+          </button>
         </div>
 
         <div className="header-actions">
@@ -514,7 +594,15 @@ export function BoardPage() {
         </div>
       </header>
 
-      <main className="board-canvas">
+      <div
+        ref={topScrollRef}
+        className={`board-scroll-top ${hasOverflow ? 'is-visible' : ''}`}
+        aria-hidden="true"
+      >
+        <div ref={topScrollInnerRef} className="board-scroll-top__inner" />
+      </div>
+
+      <main ref={canvasRef} className="board-canvas">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -526,7 +614,7 @@ export function BoardPage() {
             items={board.columns.map((c) => c.id)}
             strategy={horizontalListSortingStrategy}
           >
-            <div className="columns-row">
+            <div ref={columnsRowRef} className="columns-row">
               {board.columns.map((col) => (
                 <Column
                   key={col.id}

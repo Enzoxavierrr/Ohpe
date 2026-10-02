@@ -19,11 +19,81 @@
   z-index: 5;
 }
 
+.board-header__lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Botão de voltar — só a seta */
+.back-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xs);
+  transition: color 0.15s ease, background 0.15s ease,
+              border-color 0.15s ease, transform 0.1s ease;
+  flex-shrink: 0;
+}
+.back-btn:hover {
+  color: var(--brand-primary);
+  border-color: var(--brand-secondary);
+  box-shadow: var(--shadow-sm);
+}
+.back-btn:hover svg { transform: translateX(-2px); }
+.back-btn:active { transform: scale(0.95); }
+.back-btn svg { transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
+
+:root[data-theme="dark"] .back-btn {
+  background: var(--surface-elevated);
+}
+:root[data-theme="dark"] .back-btn:hover {
+  background: var(--surface-card);
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
   font-family: var(--font-display);
+}
+.brand--button {
+  background: transparent;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.brand--button:hover {
+  background: rgba(31, 31, 32, 0.05);
+}
+.brand--button:active { transform: translateX(-2px); }
+:root[data-theme="dark"] .brand--button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.brand-name__home {
+  color: var(--text-muted);
+  font-weight: 300;
+  transition: color 0.15s ease;
+}
+.brand--button:hover .brand-name__home {
+  color: var(--text-primary);
+}
+.brand-name__sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin: 0 8px;
+}
+.brand-name__board {
+  color: var(--text-primary);
+  font-weight: 400;
 }
 .brand-mark {
   width: 36px;
@@ -121,6 +191,46 @@
   flex: 1;
   overflow-x: auto;
   padding: 32px 40px 48px;
+  scrollbar-width: none;
+}
+.board-canvas::-webkit-scrollbar { display: none; }
+
+/* Scrollbar espelhada: fica sticky logo abaixo do header, mesmo com colunas altas */
+.board-scroll-top {
+  position: sticky;
+  top: 72px;
+  z-index: 4;
+  height: 0;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  margin: 0 40px;
+  pointer-events: none;
+  opacity: 0;
+  transition: height 0.15s ease, opacity 0.15s ease;
+}
+.board-scroll-top.is-visible {
+  height: 14px;
+  opacity: 1;
+  pointer-events: auto;
+}
+.board-scroll-top__inner {
+  height: 1px;
+}
+.board-scroll-top::-webkit-scrollbar { height: 10px; }
+.board-scroll-top::-webkit-scrollbar-track {
+  background: transparent;
+}
+.board-scroll-top::-webkit-scrollbar-thumb {
+  background: rgba(96, 109, 128, 0.35);
+  border-radius: 999px;
+}
+.board-scroll-top::-webkit-scrollbar-thumb:hover {
+  background: rgba(96, 109, 128, 0.55);
+}
+/* Firefox */
+.board-scroll-top {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96, 109, 128, 0.45) transparent;
 }
 
 .columns-row {
@@ -1399,17 +1509,6 @@
 }
 .card-detail__archive:hover { color: var(--text-primary); }
 
-/* ============ SCROLLBAR ============ */
-.board-canvas::-webkit-scrollbar { height: 10px; }
-.board-canvas::-webkit-scrollbar-track { background: transparent; }
-.board-canvas::-webkit-scrollbar-thumb {
-  background: rgba(96, 109, 128, 0.35);
-  border-radius: 999px;
-}
-.board-canvas::-webkit-scrollbar-thumb:hover {
-  background: rgba(96, 109, 128, 0.55);
-}
-
 /* ============ RESPONSIVE ============ */
 
 /* Tablet — 640-1024px: paddings intermediários, colunas mantêm 300px */
@@ -1417,6 +1516,7 @@
   .board-header { padding: 18px 28px; }
   .board-canvas { padding: 24px 28px 32px; }
   .columns-row { gap: 16px; }
+  .board-scroll-top { margin: 0 28px; top: 64px; }
 }
 
 /* Mobile — até 640px: colunas quase full-width com peek da próxima,
@@ -1426,6 +1526,11 @@
     padding: 14px 16px;
     gap: 10px;
   }
+  .board-header__lead { gap: 8px; }
+  .back-btn { padding: 6px; }
+  .back-btn__label { display: none; }
+  .brand-name__home { display: none; }
+  .brand-name__sep { display: none; }
   .brand-mark { width: 32px; height: 32px; }
   .brand-name { font-size: 20px; }
   .header-actions { gap: 8px; }
@@ -1436,6 +1541,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding-left: 16px;
   }
+  .board-scroll-top { margin: 0 16px; top: 56px; }
   .columns-row { gap: 12px; }
   .column {
     width: min(84vw, 320px);

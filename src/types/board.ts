@@ -25,3 +25,16 @@ export type Board = {
   cards: Record<string, CardData>;
   archive: string[];
 };
+
+export type BoardMeta = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Workspace = {
+  boards: Record<string, Board>;
+  meta: Record<string, BoardMeta>;
+  order: string[];
+};

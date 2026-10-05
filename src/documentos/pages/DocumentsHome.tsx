@@ -4,6 +4,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useAuth, userDisplayName } from '../../hooks/useAuth';
 import { navigate } from '../../hooks/usePathname';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { UpdatesAnnouncement } from '../../components/UpdatesAnnouncement';
 import { NewDocumentMenu } from '../components/NewDocumentMenu';
 
 type Props = {
@@ -449,6 +450,8 @@ export function DocumentsHome({
         }}
         onCancel={() => setConfirmSignOut(false)}
       />
+
+      <UpdatesAnnouncement />
     </div>
   );
 }

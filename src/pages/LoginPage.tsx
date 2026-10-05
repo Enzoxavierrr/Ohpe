@@ -330,6 +330,9 @@ export function LoginPage() {
 
 function translateError(msg: string): string {
   const m = msg.toLowerCase();
+  if (m.includes('ohpe.local') && m.includes('invalid')) {
+    return 'Sua conta é antiga e precisa ser atualizada. Entra em contato — a gente troca seu email no painel.';
+  }
   if (m.includes('esse usu') && m.includes('em uso')) return 'Esse usuário já está em uso. Escolhe outro.';
   if (m.includes('invalid login credentials')) return 'Usuário/email ou senha incorretos.';
   if (m.includes('user already registered')) return 'Já existe uma conta com esse email.';

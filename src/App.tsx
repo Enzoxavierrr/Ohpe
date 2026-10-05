@@ -22,9 +22,11 @@ function isKnownRoute(pathname: string) {
 export function App() {
   const pathname = usePathname();
   const [splashDone, setSplashDone] = useState(false);
-  const [recoveryMode, setRecoveryMode] = useState<boolean>(() =>
-    typeof window !== 'undefined' && window.location.hash.startsWith('#reset'),
-  );
+  const [recoveryMode, setRecoveryMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const hash = window.location.hash;
+    return hash.includes('type=recovery') || hash.startsWith('#reset');
+  });
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {

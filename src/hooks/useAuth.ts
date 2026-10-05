@@ -177,7 +177,9 @@ export function useAuth() {
   }
 
   async function sendResetEmail(email: string) {
-    const redirectTo = `${window.location.origin}/#reset`;
+    // Sem hash no redirectTo — o Supabase anexa #access_token=...&type=recovery
+    // e o detectSessionInUrl do client lê isso automaticamente.
+    const redirectTo = `${window.location.origin}/`;
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo,
     });

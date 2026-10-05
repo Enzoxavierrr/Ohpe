@@ -241,9 +241,59 @@ create index documents_group_idx on public.documents (group_id);
 
 > **Já tinha a tabela `documents` da versão anterior?** Rode só o `create table document_groups` acima + `alter table documents add column group_id uuid references public.document_groups(id) on delete set null; create index documents_group_idx on public.documents (group_id);`.
 
-**4.** Em **Auth → Providers → Email**, desabilite *Confirm email*
+**3.3** Aplique a tabela de usernames (pra permitir login por username):
+
+```sql
+create table public.profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  username text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+create policy "self reads"   on public.profiles for select using (auth.uid() = user_id);
+create policy "self writes"  on public.profiles for insert with check (auth.uid() = user_id);
+create policy "self updates" on public.profiles for update using (auth.uid() = user_id);
+
+-- Checa se um username está livre (pra validar antes do signup)
+create or replace function public.username_available(uname text)
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select not exists(
+    select 1 from public.profiles where username = lower(trim(uname))
+  );
+$$;
+grant execute on function public.username_available(text) to anon, authenticated;
+
+-- Resolve username → email (pra login por username)
+create or replace function public.email_for_username(uname text)
+returns text
+language sql stable security definer set search_path = public
+as $$
+  select u.email
+  from auth.users u
+  join public.profiles p on p.user_id = u.id
+  where p.username = lower(trim(uname))
+  limit 1;
+$$;
+grant execute on function public.email_for_username(text) to anon, authenticated;
+```
+
+> **Nota de privacidade:** `email_for_username` expõe o email de uma conta pra quem souber o username exato. Pra app pessoal é aceitável. Se quiser blindar, troca essa função por um edge function com rate limit.
+
+**4.** Em **Auth → Providers → Email**, desabilite *Confirm email* (login sem bloqueio)
+
+**4.1** (Reset de senha) Em **Auth → URL Configuration**, adicione o domínio do app em *Site URL* e *Redirect URLs* (ex.: `http://localhost:5173`, `https://seudominio.com`). Sem isso, o link do email de reset é bloqueado.
+
+**4.2** Em **Auth → Email Templates → Reset Password**, confira que o template referencia `{{ .ConfirmationURL }}` (padrão). O app espera o redirect pra `/#reset`.
+
+> **Dica:** tem templates HTML prontos com a identidade do Ohpe (dark mode, mobile-friendly) em [`supabase/email-templates/`](supabase/email-templates/). Cola no painel pra ter emails bonitos no reset de senha e troca de email.
 
 **5.** Copie URL + publishable key pro `.env.local`:
+
+
 
 ```env
 VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co

@@ -1,14 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BoardPage } from './pages/BoardPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { ConfigErrorPage } from './pages/ConfigErrorPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { ProtectAccountPage } from './pages/ProtectAccountPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SplashScreen } from './components/SplashScreen';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, needsAccountMigration } from './hooks/useAuth';
 import { useWorkspace } from './hooks/useBoard';
 import { usePathname } from './hooks/usePathname';
-import { supabaseConfigured, missingEnvVars } from './lib/supabase';
+import { supabase, supabaseConfigured, missingEnvVars } from './lib/supabase';
 import { DocumentsApp } from './documentos/DocumentsApp';
 import type { Board } from './types/board';
 
@@ -20,6 +22,20 @@ function isKnownRoute(pathname: string) {
 export function App() {
   const pathname = usePathname();
   const [splashDone, setSplashDone] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.location.hash.startsWith('#reset'),
+  );
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setRecoveryMode(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (recoveryMode) {
+    return <ResetPasswordPage onDone={() => setRecoveryMode(false)} />;
+  }
 
   if (pathname.startsWith('/documentos')) {
     return <DocumentsApp />;
@@ -43,11 +59,20 @@ export function App() {
 
 function AuthenticatedApp({ splashDone, onSplashDone }: { splashDone: boolean; onSplashDone: () => void }) {
   const { user, loading } = useAuth();
+  const [justMigrated, setJustMigrated] = useState(false);
+
+  const showMigration = Boolean(user && !justMigrated && needsAccountMigration(user));
 
   return (
     <>
       {!splashDone && <SplashScreen onDone={onSplashDone} />}
-      {splashDone && (loading ? null : user ? <WorkspaceRouter userId={user.id} /> : <LoginPage />)}
+      {splashDone && (loading ? null : user ? (
+        showMigration ? (
+          <ProtectAccountPage onDone={() => setJustMigrated(true)} />
+        ) : (
+          <WorkspaceRouter userId={user.id} />
+        )
+      ) : <LoginPage />)}
     </>
   );
 }
@@ -78,7 +103,6 @@ function WorkspaceRouter({ userId }: { userId: string }) {
     setTransitionKey((k) => k + 1);
   }, []);
 
-  // Se o board selecionado sumir (deletado), volta pra home
   if (view.kind === 'board' && !workspace.boards[view.id]) {
     return (
       <HomePage

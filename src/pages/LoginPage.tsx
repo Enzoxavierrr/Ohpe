@@ -1,22 +1,25 @@
 import { useState, type FormEvent } from 'react';
-import { useAuth, validateUsername } from '../hooks/useAuth';
+import { useAuth, validateEmail, validateUsername } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { BOARD_STORAGE_KEY } from '../hooks/useBoard';
 import { downloadJson } from '../utils/downloadJson';
 import '../styles/login.css';
 
-type Mode = 'signin' | 'signup';
+type Mode = 'signin' | 'signup' | 'forgot';
 
 const BRAND_LETTERS = ['O', 'h', 'p', 'e'];
 
 export function LoginPage() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, sendResetEmail } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
   const [mode, setMode] = useState<Mode>('signin');
+  const [identifier, setIdentifier] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [headerFading, setHeaderFading] = useState(false);
   const [errorKey, setErrorKey] = useState(0);
 
@@ -24,18 +27,26 @@ export function LoginPage() {
     e.preventDefault();
     if (busy) return;
     setError(null);
-
-    const invalid = validateUsername(username);
-    if (invalid) {
-      setError(invalid);
-      setErrorKey((k) => k + 1);
-      return;
-    }
+    setInfo(null);
 
     setBusy(true);
     try {
-      if (mode === 'signin') await signIn(username, password);
-      else await signUp(username, password);
+      if (mode === 'signin') {
+        await signIn(identifier, password);
+      } else if (mode === 'signup') {
+        const invalidU = validateUsername(username);
+        if (invalidU) { setError(invalidU); setErrorKey((k) => k + 1); setBusy(false); return; }
+        const invalidE = validateEmail(email);
+        if (invalidE) { setError(invalidE); setErrorKey((k) => k + 1); setBusy(false); return; }
+        await signUp(username, email, password);
+      } else {
+        const invalidE = validateEmail(email);
+        if (invalidE) { setError(invalidE); setErrorKey((k) => k + 1); setBusy(false); return; }
+        await sendResetEmail(email);
+        setInfo('Se existir uma conta com esse email, você vai receber um link em alguns segundos.');
+        setBusy(false);
+        return;
+      }
     } catch (err: any) {
       setError(translateError(err?.message || 'Falha ao autenticar'));
       setErrorKey((k) => k + 1);
@@ -47,6 +58,7 @@ export function LoginPage() {
     if (next === mode) return;
     setHeaderFading(true);
     setError(null);
+    setInfo(null);
     window.setTimeout(() => {
       setMode(next);
       setHeaderFading(false);
@@ -74,6 +86,16 @@ export function LoginPage() {
   }
 
   const localExists = hasLocalBoard();
+
+  const title = mode === 'signin' ? 'Entre na sua conta'
+    : mode === 'signup' ? 'Crie sua conta'
+    : 'Recuperar senha';
+  const subtitle = mode === 'signin' ? 'Entre com seu usuário ou email.'
+    : mode === 'signup' ? 'Escolhe um usuário, deixa seu email pra recuperar senha, cria uma senha.'
+    : 'Vamos te mandar um link pra criar uma senha nova.';
+  const submitLabel = mode === 'signin' ? 'Entrar'
+    : mode === 'signup' ? 'Criar conta'
+    : 'Enviar link';
 
   return (
     <div className="login-shell">
@@ -127,50 +149,113 @@ export function LoginPage() {
         </div>
 
         <div className={`login-header ${headerFading ? 'is-fading' : ''}`}>
-          <h1 className="login-title login-anim login-anim--3">
-            {mode === 'signin' ? 'Entre na sua conta' : 'Crie sua conta'}
-          </h1>
-          <p className="login-subtitle login-anim login-anim--4">
-            {mode === 'signin'
-              ? 'Seus cards te esperam em qualquer dispositivo.'
-              : 'Pra que seu board viaje com você entre casa e trabalho.'}
-          </p>
+          <h1 className="login-title login-anim login-anim--3">{title}</h1>
+          <p className="login-subtitle login-anim login-anim--4">{subtitle}</p>
         </div>
 
         <form className="login-form" onSubmit={onSubmit}>
-          <label className="login-field login-anim login-anim--5">
-            <span>Usuário</span>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="seunome"
-              autoComplete="username"
-              autoCapitalize="none"
-              spellCheck={false}
-              minLength={3}
-              maxLength={32}
-              required
-              disabled={busy}
-            />
-          </label>
+          {mode === 'signin' && (
+            <>
+              <label className="login-field login-anim login-anim--5">
+                <span>Usuário ou email</span>
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="seunome ou voce@email.com"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  required
+                  disabled={busy}
+                />
+              </label>
+              <label className="login-field login-anim login-anim--6">
+                <span>Senha</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  minLength={6}
+                  required
+                  disabled={busy}
+                />
+              </label>
+            </>
+          )}
 
-          <label className="login-field login-anim login-anim--6">
-            <span>Senha</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              minLength={6}
-              required
-              disabled={busy}
-            />
-          </label>
+          {mode === 'signup' && (
+            <>
+              <label className="login-field login-anim login-anim--5">
+                <span>Usuário</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="seunome"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  minLength={3}
+                  maxLength={32}
+                  required
+                  disabled={busy}
+                />
+              </label>
+              <label className="login-field login-anim login-anim--6">
+                <span>Email de recuperação</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="voce@email.com"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  required
+                  disabled={busy}
+                />
+              </label>
+              <label className="login-field login-anim login-anim--6">
+                <span>Senha</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                  disabled={busy}
+                />
+              </label>
+            </>
+          )}
+
+          {mode === 'forgot' && (
+            <label className="login-field login-anim login-anim--5">
+              <span>Email da conta</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                required
+                disabled={busy}
+              />
+            </label>
+          )}
 
           {error && (
             <div key={errorKey} className="login-error" role="alert">{error}</div>
+          )}
+          {info && (
+            <div className="login-info" role="status">{info}</div>
           )}
 
           <button
@@ -183,35 +268,52 @@ export function LoginPage() {
                 <i /><i /><i />
               </span>
             ) : (
-              <span className="login-submit__label">
-                {mode === 'signin' ? 'Entrar' : 'Criar conta'}
-              </span>
+              <span className="login-submit__label">{submitLabel}</span>
             )}
           </button>
 
-          <p className="login-remember login-anim login-anim--7">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Mantemos você conectado nesse navegador até clicar em Sair.
-          </p>
+          {mode === 'signin' && (
+            <button
+              type="button"
+              className="login-forgot"
+              onClick={() => switchMode('forgot')}
+            >
+              Esqueci minha senha
+            </button>
+          )}
+
+          {mode !== 'forgot' && (
+            <p className="login-remember login-anim login-anim--7">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Mantemos você conectado nesse navegador até clicar em Sair.
+            </p>
+          )}
         </form>
 
         <div className="login-swap login-anim login-anim--8">
-          {mode === 'signin' ? (
+          {mode === 'signin' && (
             <>
               Primeira vez?{' '}
               <button type="button" onClick={() => switchMode('signup')}>Criar uma conta</button>
             </>
-          ) : (
+          )}
+          {mode === 'signup' && (
             <>
               Já tem conta?{' '}
               <button type="button" onClick={() => switchMode('signin')}>Entrar</button>
             </>
           )}
+          {mode === 'forgot' && (
+            <>
+              Lembrou?{' '}
+              <button type="button" onClick={() => switchMode('signin')}>Voltar para o login</button>
+            </>
+          )}
         </div>
 
-        {localExists && (
+        {localExists && mode === 'signin' && (
           <div className="login-local-note login-anim login-anim--9">
             <div className="login-local-note__text">
               Tem um board salvo nesse navegador da versão antiga.
@@ -228,15 +330,17 @@ export function LoginPage() {
 
 function translateError(msg: string): string {
   const m = msg.toLowerCase();
-  if (m.includes('invalid login credentials')) return 'Usuário ou senha incorretos.';
-  if (m.includes('user already registered')) return 'Já existe uma conta com esse usuário.';
+  if (m.includes('esse usu') && m.includes('em uso')) return 'Esse usuário já está em uso. Escolhe outro.';
+  if (m.includes('invalid login credentials')) return 'Usuário/email ou senha incorretos.';
+  if (m.includes('user already registered')) return 'Já existe uma conta com esse email.';
   if (m.includes('password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.';
   if (m.includes('email') && (m.includes('invalid') || m.includes('not allowed'))) {
-    return 'Esse usuário não é aceito. Tente outro (só letras, números, . _ -).';
+    return 'Email inválido ou não aceito.';
   }
   if (m.includes('rate limit')) return 'Muitas tentativas. Espera um instante e tenta de novo.';
   if (m.includes('confirm') || m.includes('not confirmed')) {
     return 'Confirmação de email está ligada no Supabase. Desligue em Auth → Providers → Email.';
   }
+  if (m.includes('for security purposes')) return 'Muitas tentativas de reset. Espera um minuto.';
   return msg;
 }

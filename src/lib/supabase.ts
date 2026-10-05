@@ -17,7 +17,8 @@ export const supabase: SupabaseClient = supabaseConfigured
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: false,
+        detectSessionInUrl: true,
+        flowType: 'implicit',
       },
     })
   : (new Proxy({}, {

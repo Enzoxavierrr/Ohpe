@@ -6,11 +6,18 @@ import { ConfigErrorPage } from './pages/ConfigErrorPage';
 import { SplashScreen } from './components/SplashScreen';
 import { useAuth } from './hooks/useAuth';
 import { useWorkspace } from './hooks/useBoard';
+import { usePathname } from './hooks/usePathname';
 import { supabaseConfigured, missingEnvVars } from './lib/supabase';
+import { DocumentsApp } from './documentos/DocumentsApp';
 import type { Board } from './types/board';
 
 export function App() {
+  const pathname = usePathname();
   const [splashDone, setSplashDone] = useState(false);
+
+  if (pathname.startsWith('/documentos')) {
+    return <DocumentsApp />;
+  }
 
   if (!supabaseConfigured) {
     return (

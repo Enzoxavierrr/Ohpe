@@ -200,9 +200,50 @@ create policy "owner writes"  on public.boards for insert with check (auth.uid()
 create policy "owner updates" on public.boards for update using (auth.uid() = user_id);
 ```
 
-**3.** Em **Auth → Providers → Email**, desabilite *Confirm email*
+**3.** (Opcional, pra `/documentos`) Aplique também as tabelas de documentos e grupos:
 
-**4.** Copie URL + publishable key pro `.env.local`:
+```sql
+-- Grupos primeiro (documents referencia groups via FK)
+create table public.document_groups (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null default 'Novo grupo',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.document_groups enable row level security;
+create policy "owner reads"   on public.document_groups for select using (auth.uid() = user_id);
+create policy "owner writes"  on public.document_groups for insert with check (auth.uid() = user_id);
+create policy "owner updates" on public.document_groups for update using (auth.uid() = user_id);
+create policy "owner deletes" on public.document_groups for delete using (auth.uid() = user_id);
+
+create table public.documents (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null default 'Novo documento',
+  content text not null default '',
+  highlights jsonb not null default '[]'::jsonb,
+  group_id uuid references public.document_groups(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.documents enable row level security;
+
+create policy "owner reads"   on public.documents for select using (auth.uid() = user_id);
+create policy "owner writes"  on public.documents for insert with check (auth.uid() = user_id);
+create policy "owner updates" on public.documents for update using (auth.uid() = user_id);
+create policy "owner deletes" on public.documents for delete using (auth.uid() = user_id);
+
+create index documents_user_updated_idx on public.documents (user_id, updated_at desc);
+create index documents_group_idx on public.documents (group_id);
+```
+
+> **Já tinha a tabela `documents` da versão anterior?** Rode só o `create table document_groups` acima + `alter table documents add column group_id uuid references public.document_groups(id) on delete set null; create index documents_group_idx on public.documents (group_id);`.
+
+**4.** Em **Auth → Providers → Email**, desabilite *Confirm email*
+
+**5.** Copie URL + publishable key pro `.env.local`:
 
 ```env
 VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co
@@ -224,6 +265,24 @@ npm run preview   # serve localmente
 ```
 
 Defina `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no painel do host (Vercel, Netlify, Cloudflare Pages).
+
+> **SPA fallback:** rotas como `/documentos` precisam de rewrite pra `index.html` em produção. Vercel/Netlify fazem isso por padrão em projetos Vite; em Cloudflare Pages adicione um `_redirects` com `/* /index.html 200`.
+
+</details>
+
+<details>
+<summary><strong>Rota <code>/documentos</code> (beta)</strong></summary>
+
+<br />
+
+Rota experimental, isolada da home de boards. Acessa digitando `/documentos` na URL.
+
+- **Documentos em markdown** — criar em branco, importar `.md` ou colar texto.
+- **Modo leitura/edição** — toggle no header. Modo leitura renderiza com GFM (tabelas, task list, etc.).
+- **Grifo persistente** — selecione um trecho → botão "Grifar" → vira tópico no painel lateral. Clicar no tópico scrolla até o trecho com flash.
+- **Sync na nuvem** — tabela `documents` no mesmo Supabase (SQL acima).
+
+Nada da home atual (`/`) é afetado — pode mergear a feature sem risco pros boards em produção.
 
 </details>
 

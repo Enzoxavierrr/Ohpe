@@ -283,6 +283,24 @@ grant execute on function public.email_for_username(text) to anon, authenticated
 
 > **Nota de privacidade:** `email_for_username` expõe o email de uma conta pra quem souber o username exato. Pra app pessoal é aceitável. Se quiser blindar, troca essa função por um edge function com rate limit.
 
+**3.4** (Só se você tem contas legadas com `@ohpe.local`) O Supabase passou a rejeitar `.local` como TLD inválido. Rode essa migration **uma vez** pra renomear emails antigos e preservar o username em `profiles`:
+
+```sql
+-- Cria profiles pros legados antes de perder o username do email antigo
+insert into public.profiles (user_id, username)
+select id, split_part(email, '@', 1)
+from auth.users
+where email like '%@ohpe.local'
+on conflict (user_id) do nothing;
+
+-- Renomeia o domínio sintético pra um TLD válido
+update auth.users
+set email = replace(email, '@ohpe.local', '@legacy.ohpe-app.com')
+where email like '%@ohpe.local';
+```
+
+Depois disso os legados conseguem logar com username (fallback vai pra `@legacy.ohpe-app.com`), e na primeira entrada caem na tela de migração pra adicionar email real.
+
 **4.** Em **Auth → Providers → Email**, desabilite *Confirm email* (login sem bloqueio)
 
 **4.1** (Reset de senha) Em **Auth → URL Configuration**, adicione o domínio do app em *Site URL* e *Redirect URLs* (ex.: `http://localhost:5173`, `https://seudominio.com`). Sem isso, o link do email de reset é bloqueado.

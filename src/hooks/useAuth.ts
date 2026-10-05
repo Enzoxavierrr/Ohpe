@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
-const USERNAME_DOMAIN = 'ohpe.local';
+// Domínio sintético pra contas legadas (criadas antes de pedirmos email real).
+// Precisa ser um TLD válido — o Supabase passou a rejeitar '.local' em
+// qualquer operação de auth, inclusive signin. Rode a migration do README
+// pra renomear emails antigos em `auth.users`.
+const USERNAME_DOMAIN = 'legacy.ohpe-app.com';
+const LEGACY_DOMAIN_OLD = 'ohpe.local'; // só pra reconhecer dados pré-migration
 const USERNAME_RE = /^[a-z0-9._-]{3,32}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,12 +36,15 @@ function usernameToLegacyEmail(raw: string): string {
 }
 
 function isLegacyEmail(email: string | undefined | null): boolean {
-  return Boolean(email && email.toLowerCase().endsWith(`@${USERNAME_DOMAIN}`));
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return lower.endsWith(`@${USERNAME_DOMAIN}`) || lower.endsWith(`@${LEGACY_DOMAIN_OLD}`);
 }
 
 export function extractLegacyUsername(email: string | undefined | null): string {
   if (!email || !isLegacyEmail(email)) return '';
-  return email.slice(0, email.length - (USERNAME_DOMAIN.length + 1));
+  const at = email.lastIndexOf('@');
+  return at > 0 ? email.slice(0, at) : '';
 }
 
 export function userDisplayName(user: User | null): string {

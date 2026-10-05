@@ -3,6 +3,7 @@ import { BoardPage } from './pages/BoardPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { ConfigErrorPage } from './pages/ConfigErrorPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { SplashScreen } from './components/SplashScreen';
 import { useAuth } from './hooks/useAuth';
 import { useWorkspace } from './hooks/useBoard';
@@ -11,12 +12,21 @@ import { supabaseConfigured, missingEnvVars } from './lib/supabase';
 import { DocumentsApp } from './documentos/DocumentsApp';
 import type { Board } from './types/board';
 
+function isKnownRoute(pathname: string) {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  return path === '/' || path === '/index.html' || path.startsWith('/documentos');
+}
+
 export function App() {
   const pathname = usePathname();
   const [splashDone, setSplashDone] = useState(false);
 
   if (pathname.startsWith('/documentos')) {
     return <DocumentsApp />;
+  }
+
+  if (!isKnownRoute(pathname)) {
+    return <NotFoundPage />;
   }
 
   if (!supabaseConfigured) {

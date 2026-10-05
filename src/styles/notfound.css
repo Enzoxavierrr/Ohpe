@@ -1,0 +1,382 @@
+/* ============================================================
+   404 — Not Found
+   Conceito: o arco 3/4 da marca Ohpe é o "0" do 404.
+   Um círculo incompleto = algo faltando.
+
+   Camadas de movimento (parallax por profundidade via --px/--py):
+   grid (fundo) → glow → ghost cards → bloco 404 → texto (estático)
+   ============================================================ */
+
+.nf-shell {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ---------- Camadas de fundo ---------- */
+.nf-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Grid de pontos à deriva — camada mais distante */
+.nf-grid {
+  position: absolute;
+  inset: -80px;
+  background-image: radial-gradient(circle, rgba(86, 126, 187, 0.16) 1px, transparent 1.4px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse 72% 68% at center, rgba(0, 0, 0, 0.95), transparent 88%);
+  -webkit-mask-image: radial-gradient(ellipse 72% 68% at center, rgba(0, 0, 0, 0.95), transparent 88%);
+  transform: translate3d(calc(var(--px) * 14px), calc(var(--py) * 14px), 0);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation:
+    nf-fade-in 1100ms ease forwards,
+    nf-grid-drift 52s linear infinite;
+  opacity: 0;
+}
+@keyframes nf-grid-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 340px 340px; }
+}
+
+/* Glow radial pulsante */
+.nf-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 720px;
+  height: 720px;
+  margin: -360px 0 0 -360px;
+  background: radial-gradient(circle, rgba(86, 126, 187, 0.24), transparent 66%);
+  filter: blur(64px);
+  opacity: 0;
+  animation:
+    nf-glow-in 1500ms ease forwards,
+    nf-glow-breathe 9s ease-in-out 1500ms infinite;
+}
+@keyframes nf-glow-in {
+  from { opacity: 0; transform: scale(0.86); }
+  to   { opacity: 0.9; transform: scale(1); }
+}
+@keyframes nf-glow-breathe {
+  0%, 100% { opacity: 0.78; transform: scale(1)    translate3d(calc(var(--px) * 20px), calc(var(--py) * 20px), 0); }
+  50%      { opacity: 1;    transform: scale(1.09) translate3d(calc(var(--px) * 20px), calc(var(--py) * 20px), 0); }
+}
+
+/* Scan line horizontal periódica */
+.nf-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(86, 126, 187, 0.55), transparent);
+  opacity: 0;
+  animation: nf-scan-sweep 11s cubic-bezier(0.45, 0, 0.55, 1) 2400ms infinite;
+}
+@keyframes nf-scan-sweep {
+  0%        { transform: translateY(-4px);  opacity: 0; }
+  6%        { opacity: 0.85; }
+  48%       { opacity: 0.85; }
+  58%, 100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* ---------- Ghost cards (cards de kanban à deriva) ---------- */
+.nf-ghosts {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(calc(var(--px) * 26px), calc(var(--py) * 26px), 0);
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nf-ghost {
+  position: absolute;
+  display: block;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  will-change: transform;
+}
+
+.nf-ghost--1 {
+  width: 148px; height: 58px;
+  top: 16%; left: 9%;
+  animation: nf-ghost-in 900ms ease 400ms forwards, nf-drift-a 17s ease-in-out 1300ms infinite;
+}
+.nf-ghost--2 {
+  width: 116px; height: 46px;
+  top: 68%; left: 14%;
+  animation: nf-ghost-in 900ms ease 620ms forwards, nf-drift-b 21s ease-in-out 1520ms infinite;
+}
+.nf-ghost--3 {
+  width: 132px; height: 52px;
+  top: 24%; right: 11%;
+  animation: nf-ghost-in 900ms ease 540ms forwards, nf-drift-b 19s ease-in-out 1440ms infinite;
+}
+.nf-ghost--4 {
+  width: 160px; height: 62px;
+  top: 73%; right: 8%;
+  animation: nf-ghost-in 900ms ease 760ms forwards, nf-drift-a 23s ease-in-out 1660ms infinite;
+}
+.nf-ghost--5 {
+  width: 96px; height: 40px;
+  top: 45%; left: 4%;
+  animation: nf-ghost-in 900ms ease 880ms forwards, nf-drift-c 26s ease-in-out 1780ms infinite;
+}
+
+@keyframes nf-ghost-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to   { opacity: 0.5; transform: translateY(0) scale(1); }
+}
+@keyframes nf-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0)        rotate(-1.5deg); }
+  50%      { transform: translate3d(10px, -22px, 0) rotate(1.5deg); }
+}
+@keyframes nf-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0)         rotate(2deg); }
+  50%      { transform: translate3d(-14px, -16px, 0) rotate(-1deg); }
+}
+@keyframes nf-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0)       rotate(0deg); }
+  50%      { transform: translate3d(8px, -28px, 0) rotate(3deg); }
+}
+
+/* ---------- Conteúdo ---------- */
+.nf-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 540px;
+}
+
+/* ---------- O "404" ---------- */
+.nf-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.6vw, 16px);
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(92px, 19vw, 184px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: clamp(20px, 4vw, 36px);
+  transform: translate3d(calc(var(--px) * 10px), calc(var(--py) * 10px), 0);
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: nf-float 7s ease-in-out 1800ms infinite;
+}
+
+.nf-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Dígitos entram com stagger: sobem + desfocam → nítidos */
+.nf-digit {
+  display: block;
+  opacity: 0;
+  animation: nf-digit-in 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.nf-digit--a { animation-delay: 120ms; }
+.nf-digit--b { animation-delay: 420ms; }
+
+@keyframes nf-digit-in {
+  from { opacity: 0; transform: translateY(42px) scale(0.9); filter: blur(14px); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   filter: blur(0); }
+}
+
+/* O arco da marca = o "0" */
+.nf-arc {
+  display: block;
+  color: var(--brand-primary);
+}
+.nf-arc svg {
+  display: block;
+  width: 0.76em;
+  height: 0.76em;
+  overflow: visible;
+  animation: nf-arc-spin 16s linear 2000ms infinite;
+}
+
+/* Trilha fantasma: mostra o círculo "completo" que falta */
+.nf-arc-track {
+  opacity: 0;
+  stroke: currentColor;
+  stroke-dasharray: 3 26;
+  animation: nf-track-in 1200ms ease 1700ms forwards;
+}
+@keyframes nf-track-in {
+  to { opacity: 0.18; }
+}
+
+/* O arco se desenha (stroke-dasharray) */
+.nf-arc-path {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: nf-arc-draw 1300ms cubic-bezier(0.65, 0, 0.35, 1) 260ms forwards;
+}
+@keyframes nf-arc-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes nf-arc-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Flutuação idle do bloco inteiro */
+@keyframes nf-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -9px; }
+}
+
+/* ---------- Texto ---------- */
+.nf-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(22px, 3.6vw, 30px);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: nf-rise 760ms cubic-bezier(0.16, 1, 0.3, 1) 900ms forwards;
+}
+
+.nf-subtitle {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 42ch;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: nf-rise 760ms cubic-bezier(0.16, 1, 0.3, 1) 1040ms forwards;
+}
+
+@keyframes nf-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Ações ---------- */
+.nf-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: nf-rise 760ms cubic-bezier(0.16, 1, 0.3, 1) 1180ms forwards;
+}
+
+.nf-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--brand-primary);
+  color: var(--surface-card);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 220ms ease, filter 220ms ease;
+}
+.nf-cta:hover { box-shadow: var(--shadow-md); filter: brightness(1.08); }
+.nf-cta:active { filter: brightness(0.96); }
+
+/* Varredura de brilho no hover */
+.nf-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.34) 48%, transparent 64%);
+  transform: translateX(-120%);
+  transition: transform 720ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nf-cta:hover::after { transform: translateX(120%); }
+
+.nf-cta__label, .nf-cta__icon { position: relative; z-index: 1; }
+.nf-cta__icon { transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+.nf-cta:hover .nf-cta__icon { transform: translateX(4px); }
+
+.nf-ghost-btn {
+  min-height: 44px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+.nf-ghost-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--brand-secondary);
+  background: var(--surface-elevated);
+}
+
+.nf-cta:focus-visible,
+.nf-ghost-btn:focus-visible {
+  outline: 2px solid var(--brand-secondary);
+  outline-offset: 3px;
+}
+
+@keyframes nf-fade-in {
+  to { opacity: 1; }
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 640px) {
+  .nf-shell { padding: 32px 18px; }
+  .nf-glow { width: 460px; height: 460px; margin: -230px 0 0 -230px; }
+  .nf-ghost--1, .nf-ghost--4 { display: none; }
+  .nf-ghost--2 { width: 92px; height: 38px; left: 4%; }
+  .nf-ghost--3 { width: 104px; height: 42px; right: 4%; }
+  .nf-subtitle { font-size: 14px; margin-bottom: 26px; }
+  .nf-actions { width: 100%; flex-direction: column; }
+  .nf-cta, .nf-ghost-btn { width: 100%; justify-content: center; }
+}
+
+/* ---------- Movimento reduzido: tudo estático ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .nf-grid, .nf-glow, .nf-scan, .nf-ghost,
+  .nf-code, .nf-digit, .nf-arc svg, .nf-arc-path, .nf-arc-track,
+  .nf-title, .nf-subtitle, .nf-actions {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+    stroke-dashoffset: 0;
+  }
+  .nf-grid { opacity: 1; }
+  .nf-glow { opacity: 0.8; }
+  .nf-scan { opacity: 0; }
+  .nf-ghost { opacity: 0.5; }
+  .nf-arc-track { opacity: 0.18; }
+  .nf-cta::after { display: none; }
+}

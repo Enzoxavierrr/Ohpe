@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BoardPage } from './pages/BoardPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
@@ -21,6 +21,7 @@ function isKnownRoute(pathname: string) {
 
 export function App() {
   const pathname = usePathname();
+  const prevPathnameRef = useRef(pathname);
   const [splashDone, setSplashDone] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -39,12 +40,25 @@ export function App() {
     return <ResetPasswordPage onDone={() => setRecoveryMode(false)} />;
   }
 
-  if (pathname.startsWith('/documentos')) {
-    return <DocumentsApp />;
-  }
-
   if (!isKnownRoute(pathname)) {
     return <NotFoundPage />;
+  }
+
+  // Transição apenas em cross-route (/ ↔ /documentos). Movimentos internos
+  // mantêm a transição interna do próprio módulo (home ↔ board).
+  const isDocs = pathname.startsWith('/documentos');
+  const wasDocs = prevPathnameRef.current.startsWith('/documentos');
+  const crossedRoute = isDocs !== wasDocs;
+  const crossDir: 'forward' | 'backward' = isDocs ? 'forward' : 'backward';
+  prevPathnameRef.current = pathname;
+  const crossClass = crossedRoute ? `view-transition view-transition--${crossDir}` : '';
+
+  if (isDocs) {
+    return (
+      <div key="docs-route" className={crossClass}>
+        <DocumentsApp />
+      </div>
+    );
   }
 
   if (!supabaseConfigured) {
@@ -56,7 +70,11 @@ export function App() {
     );
   }
 
-  return <AuthenticatedApp splashDone={splashDone} onSplashDone={() => setSplashDone(true)} />;
+  return (
+    <div key="main-route" className={crossClass}>
+      <AuthenticatedApp splashDone={splashDone} onSplashDone={() => setSplashDone(true)} />
+    </div>
+  );
 }
 
 function AuthenticatedApp({ splashDone, onSplashDone }: { splashDone: boolean; onSplashDone: () => void }) {

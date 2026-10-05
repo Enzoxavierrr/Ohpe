@@ -7,6 +7,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ProtectAccountPage } from './pages/ProtectAccountPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SplashScreen } from './components/SplashScreen';
+import { RouteWipeOverlay } from './components/RouteWipeOverlay';
 import { useAuth, needsAccountMigration } from './hooks/useAuth';
 import { useWorkspace } from './hooks/useBoard';
 import { usePathname } from './hooks/usePathname';
@@ -21,8 +22,9 @@ function isKnownRoute(pathname: string) {
 
 export function App() {
   const pathname = usePathname();
-  const prevPathnameRef = useRef(pathname);
   const [splashDone, setSplashDone] = useState(false);
+  const [wipeKey, setWipeKey] = useState(0);
+  const prevSectionRef = useRef(pathname.startsWith('/documentos') ? 'docs' : 'main');
   const [recoveryMode, setRecoveryMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const hash = window.location.hash;
@@ -36,65 +38,63 @@ export function App() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Dispara o wipe overlay apenas quando cruza entre / e /documentos.
+  useEffect(() => {
+    const section = pathname.startsWith('/documentos') ? 'docs' : 'main';
+    if (section !== prevSectionRef.current) {
+      prevSectionRef.current = section;
+      setWipeKey((k) => k + 1);
+    }
+  }, [pathname]);
+
   if (recoveryMode) {
     return <ResetPasswordPage onDone={() => setRecoveryMode(false)} />;
+  }
+
+  // Splash só no boot — depois disso, nav entre /, /documentos usa o wipe curto.
+  if (!splashDone) {
+    return <SplashScreen onDone={() => setSplashDone(true)} />;
   }
 
   if (!isKnownRoute(pathname)) {
     return <NotFoundPage />;
   }
 
-  // Transição apenas em cross-route (/ ↔ /documentos). Movimentos internos
-  // mantêm a transição interna do próprio módulo (home ↔ board).
   const isDocs = pathname.startsWith('/documentos');
-  const wasDocs = prevPathnameRef.current.startsWith('/documentos');
-  const crossedRoute = isDocs !== wasDocs;
-  const crossDir: 'forward' | 'backward' = isDocs ? 'forward' : 'backward';
-  prevPathnameRef.current = pathname;
-  const crossClass = crossedRoute ? `view-transition view-transition--${crossDir}` : '';
+  const wipe = wipeKey > 0 ? <RouteWipeOverlay key={wipeKey} /> : null;
 
   if (isDocs) {
     return (
-      <div key="docs-route" className={crossClass}>
-        <DocumentsApp />
-      </div>
-    );
-  }
-
-  if (!supabaseConfigured) {
-    return (
       <>
-        {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
-        {splashDone && <ConfigErrorPage missing={missingEnvVars} />}
+        <DocumentsApp />
+        {wipe}
       </>
     );
   }
 
-  return (
-    <div key="main-route" className={crossClass}>
-      <AuthenticatedApp splashDone={splashDone} onSplashDone={() => setSplashDone(true)} />
-    </div>
-  );
-}
-
-function AuthenticatedApp({ splashDone, onSplashDone }: { splashDone: boolean; onSplashDone: () => void }) {
-  const { user, loading } = useAuth();
-  const [justMigrated, setJustMigrated] = useState(false);
-
-  const showMigration = Boolean(user && !justMigrated && needsAccountMigration(user));
+  if (!supabaseConfigured) {
+    return <ConfigErrorPage missing={missingEnvVars} />;
+  }
 
   return (
     <>
-      {!splashDone && <SplashScreen onDone={onSplashDone} />}
-      {splashDone && (loading ? null : user ? (
-        showMigration ? (
-          <ProtectAccountPage onDone={() => setJustMigrated(true)} />
-        ) : (
-          <WorkspaceRouter userId={user.id} />
-        )
-      ) : <LoginPage />)}
+      <AuthenticatedApp />
+      {wipe}
     </>
   );
+}
+
+function AuthenticatedApp() {
+  const { user, loading } = useAuth();
+  const [justMigrated, setJustMigrated] = useState(false);
+
+  if (loading) return null;
+  if (!user) return <LoginPage />;
+
+  const showMigration = !justMigrated && needsAccountMigration(user);
+  if (showMigration) return <ProtectAccountPage onDone={() => setJustMigrated(true)} />;
+
+  return <WorkspaceRouter userId={user.id} />;
 }
 
 type RouterView =

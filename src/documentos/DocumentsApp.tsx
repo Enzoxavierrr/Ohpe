@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { usePathname, navigate } from '../hooks/usePathname';
 import { supabaseConfigured, missingEnvVars } from '../lib/supabase';
-import { SplashScreen } from '../components/SplashScreen';
 import { LoginPage } from '../pages/LoginPage';
 import { ConfigErrorPage } from '../pages/ConfigErrorPage';
 import { DocumentsHome } from './pages/DocumentsHome';
@@ -12,28 +10,17 @@ import '../styles/home.css';
 import './styles/documentos.css';
 
 export function DocumentsApp() {
-  const [splashDone, setSplashDone] = useState(false);
-
   if (!supabaseConfigured) {
-    return (
-      <>
-        {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
-        {splashDone && <ConfigErrorPage missing={missingEnvVars} />}
-      </>
-    );
+    return <ConfigErrorPage missing={missingEnvVars} />;
   }
-
-  return <AuthedDocsApp splashDone={splashDone} onSplashDone={() => setSplashDone(true)} />;
+  return <AuthedDocsApp />;
 }
 
-function AuthedDocsApp({ splashDone, onSplashDone }: { splashDone: boolean; onSplashDone: () => void }) {
+function AuthedDocsApp() {
   const { user, loading } = useAuth();
-  return (
-    <>
-      {!splashDone && <SplashScreen onDone={onSplashDone} />}
-      {splashDone && (loading ? null : user ? <DocsRouter userId={user.id} /> : <LoginPage />)}
-    </>
-  );
+  if (loading) return null;
+  if (!user) return <LoginPage />;
+  return <DocsRouter userId={user.id} />;
 }
 
 function DocsRouter({ userId }: { userId: string }) {
@@ -52,40 +39,36 @@ function DocsRouter({ userId }: { userId: string }) {
       return null;
     }
     return (
-      <div className="view-transition">
-        <DocumentPage
-          document={current}
-          syncing={docs.syncing}
-          onUpdate={(updater) => docs.update(current.id, updater)}
-          onRename={(name) => docs.rename(current.id, name)}
-          onDelete={() => {
-            docs.remove(current.id);
-            navigate('/documentos');
-          }}
-          onBack={() => navigate('/documentos')}
-        />
-      </div>
+      <DocumentPage
+        document={current}
+        syncing={docs.syncing}
+        onUpdate={(updater) => docs.update(current.id, updater)}
+        onRename={(name) => docs.rename(current.id, name)}
+        onDelete={() => {
+          docs.remove(current.id);
+          navigate('/documentos');
+        }}
+        onBack={() => navigate('/documentos')}
+      />
     );
   }
 
   return (
-    <div className="view-transition">
-      <DocumentsHome
-        documents={docs.documents}
-        groups={docs.groups}
-        syncing={docs.syncing}
-        onOpen={(id) => navigate('/documentos/' + id)}
-        onCreate={(seed) => {
-          const id = docs.create(seed);
-          navigate('/documentos/' + id);
-        }}
-        onRename={docs.rename}
-        onDelete={docs.remove}
-        onMoveToGroup={docs.moveToGroup}
-        onCreateGroup={docs.createGroup}
-        onRenameGroup={docs.renameGroup}
-        onRemoveGroup={docs.removeGroup}
-      />
-    </div>
+    <DocumentsHome
+      documents={docs.documents}
+      groups={docs.groups}
+      syncing={docs.syncing}
+      onOpen={(id) => navigate('/documentos/' + id)}
+      onCreate={(seed) => {
+        const id = docs.create(seed);
+        navigate('/documentos/' + id);
+      }}
+      onRename={docs.rename}
+      onDelete={docs.remove}
+      onMoveToGroup={docs.moveToGroup}
+      onCreateGroup={docs.createGroup}
+      onRenameGroup={docs.renameGroup}
+      onRemoveGroup={docs.removeGroup}
+    />
   );
 }

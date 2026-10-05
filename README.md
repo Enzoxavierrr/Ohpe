@@ -334,7 +334,7 @@ npm run preview   # serve localmente
 
 Defina `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no painel do host (Vercel, Netlify, Cloudflare Pages).
 
-> **SPA fallback:** rotas como `/documentos` precisam de rewrite pra `index.html` em produção. Vercel/Netlify fazem isso por padrão em projetos Vite; em Cloudflare Pages adicione um `_redirects` com `/* /index.html 200`.
+> **SPA fallback:** o repo já traz `vercel.json` (rewrite pra Vercel) e `public/_redirects` (Netlify e Cloudflare Pages). Sem isso, acessar `/documentos` direto ou qualquer URL que não seja `/` retorna 404 do próprio host — o React nem chega a carregar.
 
 </details>
 
